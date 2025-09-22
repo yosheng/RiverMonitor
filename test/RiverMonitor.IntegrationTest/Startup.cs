@@ -25,9 +25,9 @@ public class Startup
                     {
                         {
                             "ConnectionString",
-                            "Data Source=MyDatabase.db;"
+                            "Data Source=../RiverMonitor.Dal/MyDatabase.db;"
                         }
-                    })
+                    }!)
                     .AddJsonFile("appsettings.json")
                     .Add(new SystemSettingConfigurationSource(
                         "Data Source=MyDatabase.db;"));
