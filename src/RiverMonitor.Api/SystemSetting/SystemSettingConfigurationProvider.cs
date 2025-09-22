@@ -27,7 +27,7 @@ public sealed class SystemSettingConfigurationProvider : ConfigurationProvider
     {
         var settings = new Dictionary<string, string?>
         {
-            ["Endpoint:MoenvApi"] = "https://data.moenv.gov.tw",
+            ["Endpoint:MoenvApi"] = "https://data.moenv.gov.tw/api/v2",
             ["Endpoint:MoenvApiKey"] = "5d235b2e-ba39-4dab-8b03-25bbf93d437e",
         };
 

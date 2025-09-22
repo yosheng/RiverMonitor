@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Refit;
@@ -36,7 +37,14 @@ builder.Services.AddDbContext<RiverMonitorDbContext>(
 builder.Services.AddServices();
 builder.Services.AddTransient(sp => new ApiKeyHandler(builder.Configuration["Endpoint:MoenvApiKey"]!));
 
-builder.Services.AddRefitClient<IMoenvApiService>()
+builder.Services.AddRefitClient<IMoenvApiService>(new RefitSettings
+    {
+        ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            PropertyNameCaseInsensitive = true
+        })
+    })
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["Endpoint:MoenvApi"]!))
     .AddHttpMessageHandler<ApiKeyHandler>();
 

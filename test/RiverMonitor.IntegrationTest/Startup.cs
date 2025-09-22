@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -42,7 +43,14 @@ public class Startup
                 services.AddServices();
                 services.AddTransient(sp => new ApiKeyHandler(context.Configuration["Endpoint:MoenvApiKey"]!));
 
-                services.AddRefitClient<IMoenvApiService>()
+                services.AddRefitClient<IMoenvApiService>(new RefitSettings
+                    {
+                        ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions()
+                        {
+                            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                            PropertyNameCaseInsensitive = true
+                        })
+                    })
                     .ConfigureHttpClient(c => c.BaseAddress = new Uri(context.Configuration["Endpoint:MoenvApi"]!))
                     .AddHttpMessageHandler<ApiKeyHandler>();
 
