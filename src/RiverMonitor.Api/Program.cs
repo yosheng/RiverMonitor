@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Refit;
 using RiverMonitor.Api;
 using RiverMonitor.Bll;
@@ -10,8 +11,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddSystemSettingConfiguration();
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "RiverMonitor API",
+        Version = "v1",
+        Description = "河流监测数据同步API",
+        Contact = new OpenApiContact { Name = "RiverMonitor Team" }
+    });
+    
+    Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml").ToList().ForEach(file =>
+    {
+        options.IncludeXmlComments(file, true);
+    });
+});
 
 builder.Services.AddDbContext<RiverMonitorDbContext>(
     options => options.UseSqlite(builder.Configuration["ConnectionString"])
@@ -33,7 +48,14 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger(o =>
+    {
+        o.RouteTemplate = $"/api/swagger/{{documentName}}/swagger.json";
+    });
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint($"/api/swagger/v1/swagger.json", "RiverMonitor API v1");
+    });
 }
 
 app.UseHttpsRedirection();
