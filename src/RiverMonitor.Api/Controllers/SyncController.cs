@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using RiverMonitor.Bll.Services;
 
 namespace RiverMonitor.Api.Controllers;
@@ -19,18 +19,9 @@ public class SyncController : ControllerBase
     /// </summary>
     /// <returns>同步结果</returns>
     [HttpPost("data")]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> SyncDataAsync()
+    public async Task<string> SyncDataAsync()
     {
-        try
-        {
-            await _syncService.SyncAsync();
-            return Ok("数据同步成功");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"同步失败: {ex.Message}");
-        }
+        await _syncService.SyncAsync();
+        return "数据同步成功";
     }
 }

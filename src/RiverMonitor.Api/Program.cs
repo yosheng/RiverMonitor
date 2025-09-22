@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Refit;
 using RiverMonitor.Api;
+using RiverMonitor.Api.Middleware;
 using RiverMonitor.Bll;
 using RiverMonitor.Bll.ApiServices;
 using RiverMonitor.Dal;
@@ -44,6 +45,8 @@ builder.Services.AddAutoMapper(cfg =>
 });
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
