@@ -21,7 +21,7 @@ public class SyncController : ControllerBase
     [HttpPost("data")]
     public async Task<string> SyncDataAsync()
     {
-        await _syncService.SyncAsync();
+        await _syncService.SyncWastewaterEmissionAsync();
         return "数据同步成功";
     }
 }

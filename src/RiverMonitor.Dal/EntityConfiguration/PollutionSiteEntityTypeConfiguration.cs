@@ -8,8 +8,6 @@ public class PollutionSiteEntityTypeConfiguration : IEntityTypeConfiguration<Pol
 {
     public void Configure(EntityTypeBuilder<PollutionSite> builder)
     {
-        builder.ToTable("PollutionSites");
-
         builder.HasKey(s => s.Id);
 
         // 將業務邏輯上的 SiteId 設為唯一索引，確保資料不重複

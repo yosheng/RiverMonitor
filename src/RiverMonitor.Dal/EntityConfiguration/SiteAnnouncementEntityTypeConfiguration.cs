@@ -8,8 +8,6 @@ public class SiteAnnouncementEntityTypeConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<SiteAnnouncement> builder)
     {
-        builder.ToTable("SiteAnnouncements");
-        
         builder.HasKey(a => a.Id);
 
         // 公告文號通常也是唯一的
