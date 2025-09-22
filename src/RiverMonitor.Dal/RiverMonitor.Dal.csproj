@@ -15,8 +15,4 @@
       <ProjectReference Include="..\RiverMonitor.Model\RiverMonitor.Model.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="EntityConfiguration\" />
-    </ItemGroup>
-
 </Project>
