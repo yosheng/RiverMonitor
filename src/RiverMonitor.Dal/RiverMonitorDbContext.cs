@@ -12,6 +12,8 @@ public class RiverMonitorDbContext : DbContext
     
     public DbSet<WastewaterPermit> WastewaterPermits { get; set; }
     public DbSet<PollutantEmission> PollutantEmissions { get; set; }
+    public DbSet<PollutionSite> PollutionSites { get; set; }
+    public DbSet<SiteAnnouncement> SiteAnnouncements { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

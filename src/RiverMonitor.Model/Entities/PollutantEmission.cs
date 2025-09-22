@@ -1,5 +1,8 @@
 ﻿namespace RiverMonitor.Model.Entities;
 
+/// <summary>
+/// 代表一筆具體的污染物排放紀錄。
+/// </summary>
 public class PollutantEmission
 {
     /// <summary>

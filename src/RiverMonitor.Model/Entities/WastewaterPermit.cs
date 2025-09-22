@@ -1,5 +1,8 @@
 ﻿namespace RiverMonitor.Model.Entities;
 
+/// <summary>
+/// 代表一筆廢水排放許可證及其設施資訊。
+/// </summary>
 public class WastewaterPermit
 {
     /// <summary>
