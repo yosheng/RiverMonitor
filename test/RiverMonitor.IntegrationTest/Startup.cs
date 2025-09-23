@@ -4,10 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Refit;
+using RiverMonitor.Api.SystemSetting;
 using RiverMonitor.Bll;
 using RiverMonitor.Bll.ApiServices;
 using RiverMonitor.Dal;
-using SynyiWorkManager.Provider;
 using Xunit.DependencyInjection.Logging;
 
 namespace RiverMonitor.IntegrationTest;
@@ -25,19 +25,19 @@ public class Startup
                     {
                         {
                             "ConnectionString",
-                            "Data Source=../RiverMonitor.Dal/MyDatabase.db;"
+                            "Server=127.0.0.1,1401;Database=MyDatabase;User Id=sa;Password=StrongP@ssw0rd!;Trusted_Connection=False;TrustServerCertificate=true"
                         }
                     }!)
                     .AddJsonFile("appsettings.json")
                     .Add(new SystemSettingConfigurationSource(
-                        "Data Source=MyDatabase.db;"));
+                        "Server=127.0.0.1,1401;Database=MyDatabase;User Id=sa;Password=StrongP@ssw0rd!;Trusted_Connection=False;TrustServerCertificate=true"));
             })
             .ConfigureServices((context, services) =>
             {
                 services.AddLogging(lb => lb.AddXunitOutput());
                 
                 services.AddDbContext<RiverMonitorDbContext>(
-                    options => options.UseSqlite(context.Configuration["ConnectionString"])
+                    options => options.UseSqlServer(context.Configuration["ConnectionString"])
                 );
 
                 services.AddServices();

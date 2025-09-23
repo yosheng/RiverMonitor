@@ -1,4 +1,4 @@
-﻿using SynyiWorkManager.Provider;
+﻿using RiverMonitor.Api.SystemSetting;
 
 namespace RiverMonitor.Api;
 

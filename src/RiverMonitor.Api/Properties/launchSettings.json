@@ -9,7 +9,7 @@
       "applicationUrl": "http://localhost:5004",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionString": "Data Source=../RiverMonitor.Dal/MyDatabase.db;"
+        "ConnectionString": "Server=127.0.0.1,1401;Database=MyDatabase;User Id=sa;Password=StrongP@ssw0rd!;Trusted_Connection=False;TrustServerCertificate=true"
       }
     },
     "https": {
@@ -20,7 +20,7 @@
       "applicationUrl": "https://localhost:7266;http://localhost:5004",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionString": "Data Source=../RiverMonitor.Dal/MyDatabase.db;"
+        "ConnectionString": "Server=127.0.0.1,1401;Database=MyDatabase;User Id=sa;Password=StrongP@ssw0rd!;Trusted_Connection=False;TrustServerCertificate=true"
       }
     }
   }

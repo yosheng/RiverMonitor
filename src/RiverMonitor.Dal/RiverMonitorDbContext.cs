@@ -23,7 +23,6 @@ public class RiverMonitorDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        base.OnConfiguring(optionsBuilder);
-        optionsBuilder.UseSnakeCaseNamingConvention();
+        base.OnConfiguring(optionsBuilder);;
     }
 }

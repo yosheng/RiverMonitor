@@ -1,6 +1,4 @@
-﻿using RiverMonitor.Api.SystemSetting;
-
-namespace SynyiWorkManager.Provider;
+﻿namespace RiverMonitor.Api.SystemSetting;
 
 public sealed class SystemSettingConfigurationSource : IConfigurationSource
 {

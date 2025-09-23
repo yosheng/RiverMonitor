@@ -20,7 +20,6 @@ public sealed class SystemSettingConfigurationContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite(_connectionString)
-            .UseSnakeCaseNamingConvention();
+        optionsBuilder.UseSqlServer(_connectionString);
     }
 }

@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddDbContext<RiverMonitorDbContext>(
-    options => options.UseSqlite(builder.Configuration["ConnectionString"])
+    options => options.UseSqlServer(builder.Configuration["ConnectionString"])
 );
 
 builder.Services.AddServices();
