@@ -54,6 +54,28 @@ builder.Services.AddAutoMapper(cfg =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<RiverMonitorDbContext>();
+            
+        // 執行遷移
+        dbContext.Database.Migrate();
+            
+        Console.WriteLine("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        // 處理遷移過程中可能發生的錯誤
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while applying database migrations.");
+        // 在生產環境中，您可能需要更完善的錯誤處理機制
+        // 例如：發送警報、重試或優雅地停止應用程式
+    }
+}
+
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
