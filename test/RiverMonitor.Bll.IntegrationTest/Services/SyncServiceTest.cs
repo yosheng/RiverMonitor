@@ -15,7 +15,15 @@ public class SyncServiceTest
     public async Task SyncWastewaterEmissionAsync()
     {
         await _syncService.SyncWastewaterEmissionAsync();
-        
+
+        Assert.True(true);
+    }
+
+    [Fact]
+    public async Task SyncPollutionSiteAndAnnouncementAsync()
+    {
+        await _syncService.SyncPollutionSiteAndAnnouncementAsync();
+
         Assert.True(true);
     }
 }
