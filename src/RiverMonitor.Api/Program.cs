@@ -14,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddSystemSettingConfiguration();
 
-builder.Services.AddControllers();
+// builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -25,7 +26,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "河流监测数据同步API",
         Contact = new OpenApiContact { Name = "RiverMonitor Team" }
     });
-    
+
     Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml").ToList().ForEach(file =>
     {
         options.IncludeXmlComments(file, true);
@@ -40,13 +41,13 @@ builder.Services.AddServices();
 builder.Services.AddTransient(sp => new ApiKeyHandler(builder.Configuration["Endpoint:MoenvApiKey"]!));
 
 builder.Services.AddRefitClient<IMoenvApiService>(new RefitSettings
+{
+    ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions()
     {
-        ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            PropertyNameCaseInsensitive = true
-        })
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        PropertyNameCaseInsensitive = true
     })
+})
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["Endpoint:MoenvApi"]!))
     .AddHttpMessageHandler<ApiKeyHandler>();
 
@@ -65,10 +66,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = services.GetRequiredService<RiverMonitorDbContext>();
-            
+
         // 執行遷移
         dbContext.Database.Migrate();
-            
+
         Console.WriteLine("Database migrations applied successfully.");
     }
     catch (Exception ex)
@@ -100,6 +101,14 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// load wwwroot static files
+app.UseStaticFiles();
+
 app.MapControllers();
+
+// set default route    
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=DashBoard}/{action=Index}/{id?}");
 
 app.Run();
