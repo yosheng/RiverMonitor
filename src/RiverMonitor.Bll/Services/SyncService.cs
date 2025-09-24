@@ -300,6 +300,7 @@ public class SyncService : ISyncService
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<RiverMonitorDbContext>();
         var apiService = scope.ServiceProvider.GetRequiredService<IMoenvApiService>();
+        var validationService = scope.ServiceProvider.GetRequiredService<IValidationService>();
         
         var response = await apiService.GetEmsS07DataAsync(offset, limit);
         if (response?.Records == null || !response.Records.Any()) return;
@@ -313,6 +314,8 @@ public class SyncService : ISyncService
             .ToDictionaryAsync(s => s.SiteId);
 
         var newSites = new List<PollutionSite>();
+        var validRecords = 0;
+        var invalidRecords = 0;
 
         foreach (var record in records)
         {
@@ -331,6 +334,22 @@ public class SyncService : ISyncService
                 record.Wgs84Lat = result.Latitude.ToString();
                 record.Wgs84Lng = result.Longitude.ToString();
             }
+            
+            // 數據驗證
+            var validationResult = await validationService.ValidateAsync(record);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("數據: {Serialize}", JsonSerializer.Serialize(record, new JsonSerializerOptions()
+                {
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
+                }));
+                _logger.LogWarning("污染場址數據驗證失敗 - SiteId: {SiteId}, 錯誤: {Errors}", 
+                    record.SiteId, string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                invalidRecords++;
+                continue;
+            }
+
+            validRecords++;
 
             if (!existingSites.TryGetValue(record.SiteId, out var site))
             {
@@ -375,6 +394,9 @@ public class SyncService : ISyncService
                 site.Latitude = decimal.TryParse(record.Wgs84Lat, out var lat) ? lat : site.Latitude;
             }
         }
+
+        _logger.LogInformation("批次處理完成 - 有效記錄: {ValidRecords}, 無效記錄: {InvalidRecords}", 
+            validRecords, invalidRecords);
 
         if (newSites.Any())
         {
