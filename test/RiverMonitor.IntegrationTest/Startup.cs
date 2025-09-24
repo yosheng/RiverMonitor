@@ -1,12 +1,15 @@
 ﻿using System.Text.Json;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Refit;
 using RiverMonitor.Api.SystemSetting;
 using RiverMonitor.Bll;
 using RiverMonitor.Bll.ApiServices;
+using RiverMonitor.Bll.Services;
 using RiverMonitor.Dal;
 using Xunit.DependencyInjection.Logging;
 
@@ -34,7 +37,18 @@ public class Startup
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddLogging(lb => lb.AddXunitOutput());
+                services.AddLogging(lb => lb.AddXunitOutput(options =>
+                {
+                    options.Filter = (category, logLevel) =>
+                    {
+                        if (category != null && 
+                            category.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+                        {
+                            return logLevel >= LogLevel.Warning;
+                        }
+                        return true; // 其他 category 全都允許
+                    };
+                }));
                 
                 services.AddDbContext<RiverMonitorDbContext>(
                     options => options.UseSqlServer(context.Configuration["ConnectionString"])
@@ -58,6 +72,9 @@ public class Startup
                 services.AddAutoMapper(cfg =>
                 {
                 });
+                
+                // 自動掃描整個專案，找到所有繼承自 AbstractValidator 的類別並註冊到 DI 容器
+                services.AddValidatorsFromAssemblyContaining<ValidationService>();
             });
     }
 }

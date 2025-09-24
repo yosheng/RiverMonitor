@@ -25,6 +25,6 @@ public class PollutantEmissionEntityTypeConfiguration : IEntityTypeConfiguration
             .HasColumnType("decimal(18, 10)");
             
         builder.Property(e => e.TotalItemValue)
-            .HasColumnType("decimal(18, 10)");
+            .HasColumnType("decimal(26, 10)");
     }
 }

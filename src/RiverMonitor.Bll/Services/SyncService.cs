@@ -1,6 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Text.Unicode;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RiverMonitor.Bll.ApiServices;
+using RiverMonitor.Bll.Helpers;
 using RiverMonitor.Dal;
 using RiverMonitor.Model.Entities;
 
@@ -16,21 +21,23 @@ public class SyncService : ISyncService
     private readonly IMoenvApiService _moenvApiService;
     private readonly RiverMonitorDbContext _dbContext;
     private readonly ILogger<SyncService> _logger;
+    private readonly IValidationService _validationService;
 
     public SyncService(
-        IMoenvApiService moenvApiService, 
+        IMoenvApiService moenvApiService,
         RiverMonitorDbContext dbContext,
-        ILogger<SyncService> logger)
+        ILogger<SyncService> logger, IValidationService validationService)
     {
         _moenvApiService = moenvApiService;
         _dbContext = dbContext;
         _logger = logger;
+        _validationService = validationService;
     }
 
     public async Task SyncWastewaterEmissionAsync()
     {
         _logger.LogInformation("開始同步廢水排放數據");
-        
+
         // 獲取總數
         var firstResponse = await _moenvApiService.GetEmsS03DataAsync(0, 1);
         if (firstResponse?.Records == null || !firstResponse.Records.Any())
@@ -44,7 +51,7 @@ public class SyncService : ISyncService
 
         _logger.LogInformation("總共需要處理 {Total} 條記錄", totalRecords);
 
-        const int batchSize = 1000;
+        const int batchSize = 10000;
         var processedCount = 0;
 
         for (int offset = 0; offset < totalRecords; offset += batchSize)
@@ -55,10 +62,10 @@ public class SyncService : ISyncService
             if (response?.Records == null || !response.Records.Any()) continue;
 
             var records = response.Records.ToList();
-            
+
             // 獲取所有涉及的EmsNo
             var emsNos = records.Select(r => r.EmsNo).Where(n => !string.IsNullOrEmpty(n)).Distinct().ToList();
-            
+
             // 批量查詢已存在的許可證
             var existingPermits = await _dbContext.WastewaterPermits
                 .Where(p => emsNos.Contains(p.EmsNo))
@@ -70,6 +77,39 @@ public class SyncService : ISyncService
             foreach (var record in records)
             {
                 if (string.IsNullOrEmpty(record.EmsNo)) continue;
+                
+                var result = ValidateHelper.ParseAndCorrectCoordinate(record.LetNorth, record.LetEast);
+
+                if (!result.IsValid)
+                {
+                    _logger.LogWarning("{EmsNo} -> 經緯度不合法或無法解析: Lat='{LatStr}', Lon='{LonStr}'", 
+                        record.EmsNo, record.LetNorth, record.LetEast);
+                    continue;
+                }
+                
+                record.LetNorth = result.Latitude.ToString();
+                record.LetEast = result.Longitude.ToString();
+
+                // 處理統一編號不合法
+                if (!string.IsNullOrEmpty(record.Unino) && 
+                    !Regex.IsMatch(record.Unino, @"^\d{8}$"))
+                {
+                    _logger.LogWarning("{RecordEmsNo} -> {RecordUnino} 統一編號不合法", record.EmsNo, record.Unino);
+                    continue;
+                }
+
+                var validationResult = await _validationService.ValidateAsync(record);
+
+                if (!validationResult.IsValid)
+                {
+                    _logger.LogWarning("數據: {Serialize}", JsonSerializer.Serialize(record, new JsonSerializerOptions()
+                    {
+                        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
+                    }));
+                    _logger.LogWarning("數據驗證失敗：{ValidationError}",
+                        string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                    throw new ArgumentException("處理錯誤");
+                }
 
                 // 處理許可證（去重）
                 if (!existingPermits.TryGetValue(record.EmsNo, out var permit))
@@ -138,7 +178,7 @@ public class SyncService : ISyncService
             // 批量插入新數據
             if (newPermits.Any())
                 _dbContext.WastewaterPermits.AddRange(newPermits);
-            
+
             if (newEmissions.Any())
                 _dbContext.PollutantEmissions.AddRange(newEmissions);
 

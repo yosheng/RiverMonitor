@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Refit;
@@ -6,6 +7,7 @@ using RiverMonitor.Api;
 using RiverMonitor.Api.Middleware;
 using RiverMonitor.Bll;
 using RiverMonitor.Bll.ApiServices;
+using RiverMonitor.Bll.Services;
 using RiverMonitor.Dal;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,6 +53,9 @@ builder.Services.AddRefitClient<IMoenvApiService>(new RefitSettings
 builder.Services.AddAutoMapper(cfg =>
 {
 });
+
+// 自動掃描整個專案，找到所有繼承自 AbstractValidator 的類別並註冊到 DI 容器
+builder.Services.AddValidatorsFromAssemblyContaining<ValidationService>();
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RiverMonitor.Model.Entities;
 
 namespace RiverMonitor.Dal;
@@ -23,6 +24,6 @@ public class RiverMonitorDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        base.OnConfiguring(optionsBuilder);;
+        base.OnConfiguring(optionsBuilder);
     }
 }
