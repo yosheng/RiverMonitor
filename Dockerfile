@@ -7,12 +7,11 @@ ENV TZ=Asia/Taipei
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
 
 # 複製所有檔案 (但會被 .dockerignore 過濾)
 COPY . .
 
-RUN dotnet restore "RiverMonitor.sln"
+RUN dotnet restore "./src/RiverMonitor.Api/RiverMonitor.Api.csproj"
 WORKDIR "/src/RiverMonitor.Api"
 RUN dotnet build "./RiverMonitor.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
