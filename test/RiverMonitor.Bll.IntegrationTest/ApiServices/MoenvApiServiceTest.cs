@@ -36,4 +36,11 @@ public class MoenvApiServiceTest
         _output.WriteLine(result.Total!);
         Assert.NotNull(result);
     }
+    
+    [Fact]
+    public async Task GetWqxP01DataAsync_ShouldReturnData()
+    {
+        var result = await _moenvApiService.GetWqxP01DataAsync(0, 5);
+        Assert.NotNull(result);
+    }
 }

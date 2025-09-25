@@ -1,6 +1,6 @@
 ﻿namespace RiverMonitor.Model.ApiModels;
 
-public class WqxP01Data
+public class WqxP06Data
 {
     public class RootObject
     {
@@ -27,98 +27,74 @@ public class WqxP01Data
     }
 
     /// <summary>
-    /// 代表從 API 獲取的一筆原始河川水質監測紀錄。
+    /// 代表從 API 獲取的一筆測站基本資料紀錄。
+    /// 屬性名稱與來源 JSON 欄位直接對應，以確保資料綁定成功。
     /// </summary>
     public class RecordItem
     {
         /// <summary>
-        /// 測站編號 (SiteId)
+        /// 測站編號 (Site ID)
         /// </summary>
         public string? Siteid { get; set; }
-        
+
         /// <summary>
-        /// 測站名稱 (SiteName)
+        /// 測站名稱 (Site Name)
         /// </summary>
         public string? Sitename { get; set; }
-        
+
         /// <summary>
-        /// 測站英文名稱 (SiteEngName)
+        /// 測站英文名稱 (Site English Name)
         /// </summary>
         public string? Siteengname { get; set; }
-        
+
         /// <summary>
         /// 縣市 (County)
         /// </summary>
         public string? County { get; set; }
-        
+
         /// <summary>
         /// 鄉鎮市區 (Township)
         /// </summary>
         public string? Township { get; set; }
-        
+
         /// <summary>
-        /// 流域 (Basin)
+        /// 流域 (River Basin)
         /// </summary>
         public string? Basin { get; set; }
-        
+
         /// <summary>
         /// 河川 (River)
         /// </summary>
         public string? River { get; set; }
-        
+
         /// <summary>
-        /// TWD97經度 (TWD97Lon)
+        /// TWD97 經度 (TWD97 Longitude)
         /// </summary>
         public string? Twd97Lon { get; set; }
-        
+
         /// <summary>
-        /// TWD97緯度 (TWD97Lat)
+        /// TWD97 緯度 (TWD97 Latitude)
         /// </summary>
         public string? Twd97Lat { get; set; }
-        
+
         /// <summary>
-        /// TWD97TM2X座標 (TWD97TM2X)
+        /// TWD97 TM2 X座標 (TWD97 TM2 X-coordinate)
         /// </summary>
         public string? Twd97Tm2X { get; set; }
-        
+
         /// <summary>
-        /// TWD97TM2Y座標 (TWD97TM2Y)
+        /// TWD97 TM2 Y座標 (TWD97 TM2 Y-coordinate)
         /// </summary>
         public string? Twd97Tm2Y { get; set; }
-        
+
         /// <summary>
-        /// 採樣日期 (SampleDate)
+        /// 測站地址 (Site Address)
         /// </summary>
-        public string? Sampledate { get; set; }
-        
+        public string? Siteaddress { get; set; }
+
         /// <summary>
-        /// 檢測項目 (ItemName)
+        /// 使用狀態 (Status of Use)
         /// </summary>
-        public string? Itemname { get; set; }
-        
-        /// <summary>
-        /// 檢測項目英文名稱 (ItemEngName)
-        /// </summary>
-        public string? Itemengname { get; set; }
-        
-        /// <summary>
-        /// 檢測項目英文縮寫 (ItemEngAbbreviation)
-        /// </summary>
-        public string? Itemengabbreviation { get; set; }
-        
-        /// <summary>
-        /// 檢測值 (ItemValue)
-        /// </summary>
-        public string? Itemvalue { get; set; }
-        
-        /// <summary>
-        /// 檢測項目單位 (ItemUnit)
-        /// </summary>
-        public string? Itemunit { get; set; }
-        
-        /// <summary>
-        /// 備註 (Note)
-        /// </summary>
-        public string? Note { get; set; }
+        public string? Statusofuse { get; set; }
     }
 }
