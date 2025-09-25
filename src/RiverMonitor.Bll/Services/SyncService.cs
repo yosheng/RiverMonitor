@@ -18,9 +18,13 @@ public interface ISyncService
     Task SyncWastewaterEmissionAsync();
     
     Task SyncPollutionSiteAndAnnouncementAsync();
+
+    Task SyncMonitoringSiteAsync();
+    
+    Task SyncGroundwaterSiteAsync();
 }
 
-public class SyncService : ISyncService
+public partial class SyncService : ISyncService
 {
     private readonly IMoenvApiService _moenvApiService;
     private readonly RiverMonitorDbContext _dbContext;
