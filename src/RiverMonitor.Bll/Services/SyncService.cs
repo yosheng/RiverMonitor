@@ -114,10 +114,7 @@ public partial class SyncService : ISyncService
 
                 if (!validationResult.IsValid)
                 {
-                    _logger.LogWarning("數據: {Serialize}", JsonSerializer.Serialize(record, new JsonSerializerOptions()
-                    {
-                        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
-                    }));
+                    PrintErrorRecord(record);
                     _logger.LogWarning("數據驗證失敗：{ValidationError}",
                         string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                     throw new ArgumentException("處理錯誤");
@@ -343,10 +340,7 @@ public partial class SyncService : ISyncService
             var validationResult = await validationService.ValidateAsync(record);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning("數據: {Serialize}", JsonSerializer.Serialize(record, new JsonSerializerOptions()
-                {
-                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
-                }));
+                PrintErrorRecord(record);
                 _logger.LogWarning("污染場址數據驗證失敗 - SiteId: {SiteId}, 錯誤: {Errors}", 
                     record.SiteId, string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 invalidRecords++;
@@ -507,5 +501,13 @@ public partial class SyncService : ISyncService
         }
 
         return processedCount;
+    }
+
+    private void PrintErrorRecord<T>(T record)
+    {
+        _logger.LogWarning("數據: {Serialize}", JsonSerializer.Serialize(record, new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
+        }));
     }
 }

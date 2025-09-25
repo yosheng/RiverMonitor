@@ -91,4 +91,14 @@ public static class ValidateHelper
             System.Globalization.CultureInfo.InvariantCulture, 
             System.Globalization.DateTimeStyles.None, out _);
     }
+    
+    public static bool BeValidDateTimeFormat(string? dateStr)
+    {
+        if (string.IsNullOrEmpty(dateStr))
+            return true;
+        
+        return DateTime.TryParseExact(dateStr, "yyyy-MM-dd hh:mm:ss", 
+            System.Globalization.CultureInfo.InvariantCulture, 
+            System.Globalization.DateTimeStyles.None, out _);
+    }
 }

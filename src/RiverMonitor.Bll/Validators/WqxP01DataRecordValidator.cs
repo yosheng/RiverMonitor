@@ -96,8 +96,8 @@ public class WqxP01DataRecordValidator : AbstractValidator<WqxP01Data.RecordItem
         RuleFor(x => x.Sampledate)
             .NotEmpty()
             .WithMessage("採樣日期為必填")
-            .Must(ValidateHelper.BeValidDateFormat)
-            .WithMessage("採樣日期格式無效，應為YYYY-MM-DD")
+            .Must(ValidateHelper.BeValidDateTimeFormat)
+            .WithMessage("採樣日期格式無效，應為YYYY-MM-DD hh:mm:ss")
             .When(x => !string.IsNullOrEmpty(x.Sampledate));
 
         // 檢測項目 - 必填，長度限制 (根據實體配置：最大長度100)

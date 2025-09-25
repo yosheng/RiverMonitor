@@ -64,68 +64,68 @@ public class WqxP06DataRecordValidator : AbstractValidator<WqxP06Data.RecordItem
             .When(x => !string.IsNullOrEmpty(x.Siteaddress));
 
         // TWD97 經度 - 精度驗證 (根據實體配置：decimal(12,8))
-        RuleFor(x => x.Twd97Lon)
+        RuleFor(x => x.Twd97lon)
             .Must(value => ValidateHelper.BeValidLongitudeWithPrecision(value, 4, 8))
             .WithMessage("TWD97經度格式無效，必須在0-180度之間且小數部分不能超過8位")
-            .When(x => !string.IsNullOrEmpty(x.Twd97Lon));
+            .When(x => !string.IsNullOrEmpty(x.Twd97lon));
 
         // TWD97 緯度 - 精度驗證 (根據實體配置：decimal(12,8))
-        RuleFor(x => x.Twd97Lat)
+        RuleFor(x => x.Twd97lat)
             .Must(value => ValidateHelper.BeValidLatitudeWithPrecision(value, 2, 8))
             .WithMessage("TWD97緯度格式無效，必須在0-90度之間且小數部分不能超過8位")
-            .When(x => !string.IsNullOrEmpty(x.Twd97Lat));
+            .When(x => !string.IsNullOrEmpty(x.Twd97lat));
 
         // TWD97 TM2 X座標 - 精度驗證 (根據實體配置：decimal(12,4))
-        RuleFor(x => x.Twd97Tm2X)
+        RuleFor(x => x.Twd97tm2x)
             .Must(value => ValidateHelper.BeValidDecimalWithPrecision(value, 8, 4))
             .WithMessage("TWD97 TM2 X座標格式無效，必須為數字且小數部分不能超過4位")
-            .When(x => !string.IsNullOrEmpty(x.Twd97Tm2X));
+            .When(x => !string.IsNullOrEmpty(x.Twd97tm2x));
 
         // TWD97 TM2 Y座標 - 精度驗證 (根據實體配置：decimal(12,4))
-        RuleFor(x => x.Twd97Tm2Y)
+        RuleFor(x => x.Twd97tm2y)
             .Must(value => ValidateHelper.BeValidDecimalWithPrecision(value, 8, 4))
             .WithMessage("TWD97 TM2 Y座標格式無效，必須為數字且小數部分不能超過4位")
-            .When(x => !string.IsNullOrEmpty(x.Twd97Tm2Y));
+            .When(x => !string.IsNullOrEmpty(x.Twd97tm2y));
 
         // 坐標一致性驗證 - 如果提供經緯度，必須同時提供兩個
         RuleFor(x => x)
             .Must(HaveValidCoordinatePair)
             .WithMessage("TWD97經緯度必須同時提供，不能只提供其中一個")
-            .When(x => !string.IsNullOrEmpty(x.Twd97Lon) || !string.IsNullOrEmpty(x.Twd97Lat));
+            .When(x => !string.IsNullOrEmpty(x.Twd97lon) || !string.IsNullOrEmpty(x.Twd97lat));
 
         // TM2坐標一致性驗證 - 如果提供TM2坐標，必須同時提供兩個
         RuleFor(x => x)
             .Must(HaveValidTm2CoordinatePair)
             .WithMessage("TWD97 TM2坐標必須同時提供，不能只提供其中一個")
-            .When(x => !string.IsNullOrEmpty(x.Twd97Tm2X) || !string.IsNullOrEmpty(x.Twd97Tm2Y));
+            .When(x => !string.IsNullOrEmpty(x.Twd97tm2x) || !string.IsNullOrEmpty(x.Twd97tm2y));
 
         // 台灣地區坐標範圍驗證 - 使用ValidateHelper進行台灣特定範圍驗證
         RuleFor(x => x)
             .Must(HaveValidTaiwanCoordinates)
             .WithMessage("坐標必須在台灣地區合理範圍內（經度：119-123度，緯度：21-26度）")
-            .When(x => !string.IsNullOrEmpty(x.Twd97Lon) && !string.IsNullOrEmpty(x.Twd97Lat));
+            .When(x => !string.IsNullOrEmpty(x.Twd97lon) && !string.IsNullOrEmpty(x.Twd97lat));
     }
 
     private bool HaveValidCoordinatePair(WqxP06Data.RecordItem record)
     {
         // 確保經緯度要麼都有值，要麼都沒有值
-        var hasLon = !string.IsNullOrEmpty(record.Twd97Lon);
-        var hasLat = !string.IsNullOrEmpty(record.Twd97Lat);
+        var hasLon = !string.IsNullOrEmpty(record.Twd97lon);
+        var hasLat = !string.IsNullOrEmpty(record.Twd97lat);
         return hasLon == hasLat;
     }
 
     private bool HaveValidTm2CoordinatePair(WqxP06Data.RecordItem record)
     {
         // 確保TM2坐標要麼都有值，要麼都沒有值
-        var hasX = !string.IsNullOrEmpty(record.Twd97Tm2X);
-        var hasY = !string.IsNullOrEmpty(record.Twd97Tm2Y);
+        var hasX = !string.IsNullOrEmpty(record.Twd97tm2x);
+        var hasY = !string.IsNullOrEmpty(record.Twd97tm2y);
         return hasX == hasY;
     }
 
     private bool HaveValidTaiwanCoordinates(WqxP06Data.RecordItem record)
     {
         // 使用ValidateHelper進行台灣地區坐標驗證
-        var result = ValidateHelper.ParseAndCorrectCoordinate(record.Twd97Lat, record.Twd97Lon);
+        var result = ValidateHelper.ParseAndCorrectCoordinate(record.Twd97lat, record.Twd97lon);
         if (!result.IsValid)
             return false;
 

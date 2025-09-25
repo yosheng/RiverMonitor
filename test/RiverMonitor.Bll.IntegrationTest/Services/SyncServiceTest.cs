@@ -26,4 +26,12 @@ public class SyncServiceTest
 
         Assert.True(true);
     }
+
+    [Fact]
+    public async Task SyncMonitoringSiteAsync()
+    {
+        await _syncService.SyncMonitoringSiteAsync();
+        
+        Assert.True(true);
+    }
 }

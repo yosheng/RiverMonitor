@@ -92,9 +92,9 @@ public partial class SyncService
             // 坐標驗證與轉換
             decimal? twd97Lon = null, twd97Lat = null, twd97Tm2X = null, twd97Tm2Y = null;
             
-            if (!string.IsNullOrEmpty(record.Twd97Lon) && !string.IsNullOrEmpty(record.Twd97Lat))
+            if (!string.IsNullOrEmpty(record.Twd97lon) && !string.IsNullOrEmpty(record.Twd97lat))
             {
-                var result = ValidateHelper.ParseAndCorrectCoordinate(record.Twd97Lat, record.Twd97Lon);
+                var result = ValidateHelper.ParseAndCorrectCoordinate(record.Twd97lat, record.Twd97lon);
                 if (result.IsValid)
                 {
                     twd97Lon = result.Longitude;
@@ -103,21 +103,22 @@ public partial class SyncService
                 else
                 {
                     _logger.LogWarning("{SiteId} -> TWD97經緯度坐標校正失敗: Lat='{LatStr}', Lon='{LonStr}'", 
-                        record.Siteid, record.Twd97Lat, record.Twd97Lon);
+                        record.Siteid, record.Twd97lat, record.Twd97lon);
                 }
             }
 
             // TM2坐標轉換
-            if (!string.IsNullOrEmpty(record.Twd97Tm2X))
-                twd97Tm2X = decimal.TryParse(record.Twd97Tm2X, out var x) ? x : null;
+            if (!string.IsNullOrEmpty(record.Twd97tm2x))
+                twd97Tm2X = decimal.TryParse(record.Twd97tm2x, out var x) ? x : null;
             
-            if (!string.IsNullOrEmpty(record.Twd97Tm2Y))
-                twd97Tm2Y = decimal.TryParse(record.Twd97Tm2Y, out var y) ? y : null;
+            if (!string.IsNullOrEmpty(record.Twd97tm2y))
+                twd97Tm2Y = decimal.TryParse(record.Twd97tm2y, out var y) ? y : null;
             
             // 數據驗證
             var validationResult = await _validationService.ValidateAsync(record);
             if (!validationResult.IsValid)
             {
+                PrintErrorRecord(record);
                 _logger.LogWarning("監測站資料驗證失敗 - SiteId: {SiteId}, 錯誤: {Errors}", 
                     record.Siteid, string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 invalidRecords++;
@@ -195,7 +196,7 @@ public partial class SyncService
 
         _logger.LogInformation("總共需要處理 {Total} 筆監測資料", totalRecords);
 
-        const int batchSize = 1000;
+        const int batchSize = 10000;
         var processedCount = 0;
 
         // 預先加載所有監測站ID映射，避免N+1查詢
@@ -230,18 +231,6 @@ public partial class SyncService
 
         var records = response.Records.ToList();
         
-        // 生成唯一標識符來避免重複 (SiteId + SampleDate + ItemName)
-        var sampleKeys = records.Select(r => $"{r.Siteid}_{r.Sampledate}_{r.Itemname}")
-            .Where(key => !string.IsNullOrEmpty(key) && !key.EndsWith("_"))
-            .Distinct()
-            .ToList();
-        
-        // 批量查詢已存在的樣本
-        var existingSamples = await dbContext.MonitoringSiteSamples
-            .Where(s => sampleKeys.Contains($"{s.Site.SiteId}_{s.SampleDate:yyyy-MM-dd}_{s.ItemName}"))
-            .Select(s => new { Key = $"{s.Site.SiteId}_{s.SampleDate:yyyy-MM-dd}_{s.ItemName}", Sample = s })
-            .ToDictionaryAsync(x => x.Key, x => x.Sample);
-
         var newSamples = new List<MonitoringSiteSample>();
         var validRecords = 0;
         var invalidRecords = 0;
@@ -266,6 +255,7 @@ public partial class SyncService
             var validationResult = await validationService.ValidateAsync(record);
             if (!validationResult.IsValid)
             {
+                PrintErrorRecord(record);
                 _logger.LogWarning("監測資料驗證失敗 - SiteId: {SiteId}, SampleDate: {SampleDate}, Item: {ItemName}, 錯誤: {Errors}", 
                     record.Siteid, record.Sampledate, record.Itemname, 
                     string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
@@ -281,43 +271,25 @@ public partial class SyncService
                 invalidRecords++;
                 continue;
             }
-
-            var sampleKey = $"{record.Siteid}_{sampleDate:yyyy-MM-dd}_{record.Itemname}";
             
             // 解析檢測值
             var itemValue = decimal.TryParse(record.Itemvalue, out var value) ? value : (decimal?)null;
 
             validRecords++;
 
-            if (!existingSamples.TryGetValue(sampleKey, out var sample))
+            var sample = new MonitoringSiteSample
             {
-                sample = new MonitoringSiteSample
-                {
-                    Id = Guid.NewGuid(),
-                    SampleDate = sampleDate,
-                    ItemName = record.Itemname,
-                    ItemEngName = record.Itemengname,
-                    ItemEngAbbreviation = record.Itemengabbreviation,
-                    ItemValue = itemValue,
-                    ItemUnit = record.Itemunit,
-                    Note = record.Note,
-                    MonitoringSiteId = monitoringSiteId
-                };
-                newSamples.Add(sample);
-                existingSamples[sampleKey] = sample;
-            }
-            else
-            {
-                // 更新現有樣本信息
-                sample.SampleDate = sampleDate;
-                sample.ItemName = record.Itemname ?? sample.ItemName;
-                sample.ItemEngName = record.Itemengname ?? sample.ItemEngName;
-                sample.ItemEngAbbreviation = record.Itemengabbreviation ?? sample.ItemEngAbbreviation;
-                sample.ItemValue = itemValue ?? sample.ItemValue;
-                sample.ItemUnit = record.Itemunit ?? sample.ItemUnit;
-                sample.Note = record.Note ?? sample.Note;
-                sample.MonitoringSiteId = monitoringSiteId;
-            }
+                Id = Guid.NewGuid(),
+                SampleDate = sampleDate,
+                ItemName = record.Itemname,
+                ItemEngName = record.Itemengname,
+                ItemEngAbbreviation = record.Itemengabbreviation,
+                ItemValue = itemValue,
+                ItemUnit = record.Itemunit,
+                Note = record.Note,
+                MonitoringSiteId = monitoringSiteId
+            };
+            newSamples.Add(sample);
         }
 
         _logger.LogInformation("監測資料批次處理完成 - 有效記錄: {ValidRecords}, 無效記錄: {InvalidRecords}", 

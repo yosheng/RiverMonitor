@@ -70,22 +70,22 @@ public class WqxP06Data
         /// <summary>
         /// TWD97 經度 (TWD97 Longitude)
         /// </summary>
-        public string? Twd97Lon { get; set; }
+        public string? Twd97lon { get; set; }
 
         /// <summary>
         /// TWD97 緯度 (TWD97 Latitude)
         /// </summary>
-        public string? Twd97Lat { get; set; }
+        public string? Twd97lat { get; set; }
 
         /// <summary>
         /// TWD97 TM2 X座標 (TWD97 TM2 X-coordinate)
         /// </summary>
-        public string? Twd97Tm2X { get; set; }
+        public string? Twd97tm2x { get; set; }
 
         /// <summary>
         /// TWD97 TM2 Y座標 (TWD97 TM2 Y-coordinate)
         /// </summary>
-        public string? Twd97Tm2Y { get; set; }
+        public string? Twd97tm2y { get; set; }
 
         /// <summary>
         /// 測站地址 (Site Address)
