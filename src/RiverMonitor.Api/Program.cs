@@ -50,6 +50,9 @@ builder.Services.AddRefitClient<IMoenvApiService>(new RefitSettings
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["Endpoint:MoenvApi"]!))
     .AddHttpMessageHandler<ApiKeyHandler>();
 
+builder.Services.AddRefitClient<IMoaApiService>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["Endpoint:MoaApi"]!));
+
 builder.Services.AddAutoMapper(cfg =>
 {
 });

@@ -24,6 +24,10 @@ public class RiverMonitorDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(RiverMonitorDbContext).Assembly);
+        
+        modelBuilder.Entity<SystemSetting>().HasData(
+            new SystemSetting { Key = "Endpoint:MoaApi", Value = "https://data.moa.gov.tw" }
+        );
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
