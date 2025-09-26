@@ -19,6 +19,15 @@ public class Startup
 {
     public void ConfigureHost(IHostBuilder hostBuilder)
     {
+        DotNetEnv.Env.Load();
+
+        var connectionString = DotNetEnv.Env.GetString("ConnectionString");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            connectionString =
+                "Server=127.0.0.1,1401;Database=MyDatabase;User Id=sa;Password=StrongP@ssw0rd!;Trusted_Connection=False;TrustServerCertificate=true";
+        }
+
         hostBuilder
             .ConfigureAppConfiguration(builder =>
             {
@@ -28,12 +37,12 @@ public class Startup
                     {
                         {
                             "ConnectionString",
-                            "Server=127.0.0.1,1401;Database=MyDatabase;User Id=sa;Password=StrongP@ssw0rd!;Trusted_Connection=False;TrustServerCertificate=true"
+                            connectionString
                         }
                     }!)
                     .AddJsonFile("appsettings.json")
                     .Add(new SystemSettingConfigurationSource(
-                        "Server=127.0.0.1,1401;Database=MyDatabase;User Id=sa;Password=StrongP@ssw0rd!;Trusted_Connection=False;TrustServerCertificate=true"));
+                        connectionString));
             })
             .ConfigureServices((context, services) =>
             {
@@ -41,17 +50,18 @@ public class Startup
                 {
                     options.Filter = (category, logLevel) =>
                     {
-                        if (category != null && 
+                        if (category != null &&
                             category.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
                         {
                             return logLevel >= LogLevel.Warning;
                         }
+
                         return true; // 其他 category 全都允許
                     };
                 }));
-                
-                services.AddDbContext<RiverMonitorDbContext>(
-                    options => options.UseSqlServer(context.Configuration["ConnectionString"])
+
+                services.AddDbContext<RiverMonitorDbContext>(options =>
+                    options.UseSqlServer(context.Configuration["ConnectionString"])
                 );
 
                 services.AddServices();
@@ -69,10 +79,8 @@ public class Startup
                     .AddHttpMessageHandler<ApiKeyHandler>();
 
 
-                services.AddAutoMapper(cfg =>
-                {
-                });
-                
+                services.AddAutoMapper(cfg => { });
+
                 // 自動掃描整個專案，找到所有繼承自 AbstractValidator 的類別並註冊到 DI 容器
                 services.AddValidatorsFromAssemblyContaining<ValidationService>();
             });
