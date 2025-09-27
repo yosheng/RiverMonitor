@@ -77,6 +77,10 @@ public class Startup
                     })
                     .ConfigureHttpClient(c => c.BaseAddress = new Uri(context.Configuration["Endpoint:MoenvApi"]!))
                     .AddHttpMessageHandler<ApiKeyHandler>();
+                
+                
+                services.AddRefitClient<IMoaApiService>()
+                    .ConfigureHttpClient(c => c.BaseAddress = new Uri(context.Configuration["Endpoint:MoaApi"]!));
 
 
                 services.AddAutoMapper(cfg => { });

@@ -19,14 +19,14 @@ public class ThematicRequestForm
     [AliasAs("Sel_Catalog")]
     public string? Sel_Catalog { get; set; }
 
-    [AliasAs("Sel_Organ")]
-    public string? Sel_Organ { get; set; }
+    [AliasAs("Sel_Organ")] 
+    public int? Sel_Organ { get; set; } = 33;
 
     [AliasAs("Sel_Format")]
     public string? Sel_Format { get; set; }
 
-    [AliasAs("Ord")]
-    public int Ord { get; set; }
+    [AliasAs("Ord")] 
+    public int Ord { get; set; } = 0;
 
     // C# 屬性使用 PascalCase, 透過 AliasAs 對應到 API 需要的小寫開頭欄位
     [AliasAs("sel_CatalogSecond")]
