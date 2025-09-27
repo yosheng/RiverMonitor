@@ -25,15 +25,15 @@ builder.Services.AddSwaggerGen(options =>
         Description = "河流监测数据同步API",
         Contact = new OpenApiContact { Name = "RiverMonitor Team" }
     });
-    
+
     Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml").ToList().ForEach(file =>
     {
         options.IncludeXmlComments(file, true);
     });
 });
 
-builder.Services.AddDbContext<RiverMonitorDbContext>(
-    options => options.UseSqlServer(builder.Configuration["ConnectionString"])
+builder.Services.AddDbContext<RiverMonitorDbContext>(options =>
+    options.UseSqlServer(builder.Configuration["ConnectionString"])
 );
 
 builder.Services.AddServices();
@@ -53,9 +53,10 @@ builder.Services.AddRefitClient<IMoenvApiService>(new RefitSettings
 builder.Services.AddRefitClient<IMoaApiService>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["Endpoint:MoaApi"]!));
 
-builder.Services.AddAutoMapper(cfg =>
-{
-});
+builder.Services.AddRefitClient<IIaApiService>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri(builder.Configuration["Endpoint:IaApi"]!));
+
+builder.Services.AddAutoMapper(cfg => { });
 
 // 自動掃描整個專案，找到所有繼承自 AbstractValidator 的類別並註冊到 DI 容器
 builder.Services.AddValidatorsFromAssemblyContaining<ValidationService>();
@@ -68,10 +69,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = services.GetRequiredService<RiverMonitorDbContext>();
-            
+
         // 執行遷移
         dbContext.Database.Migrate();
-            
+
         Console.WriteLine("Database migrations applied successfully.");
     }
     catch (Exception ex)
@@ -89,14 +90,8 @@ app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(o =>
-    {
-        o.RouteTemplate = $"/api/swagger/{{documentName}}/swagger.json";
-    });
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint($"/api/swagger/v1/swagger.json", "RiverMonitor API v1");
-    });
+    app.UseSwagger(o => { o.RouteTemplate = $"/api/swagger/{{documentName}}/swagger.json"; });
+    app.UseSwaggerUI(options => { options.SwaggerEndpoint($"/api/swagger/v1/swagger.json", "RiverMonitor API v1"); });
 }
 
 app.UseHttpsRedirection();

@@ -15,8 +15,8 @@ public sealed class SystemSettingConfigurationProvider : ConfigurationProvider
 
         dbContext.Database.EnsureCreated();
 
-        Data = dbContext.SystemSettings.Any()
-            ? dbContext.SystemSettings.ToDictionary(
+        Data = dbContext.SystemSetting.Any()
+            ? dbContext.SystemSetting.ToDictionary(
                 static c => c.Key,
                 static c => c.Value)
             : CreateAndSaveDefaultValues(dbContext);
@@ -38,7 +38,7 @@ public sealed class SystemSettingConfigurationProvider : ConfigurationProvider
                 Value = setting.Value
             }).ToList();
         
-        context.SystemSettings.AddRange(data);
+        context.SystemSetting.AddRange(data);
 
         context.SaveChanges();
 
