@@ -26,7 +26,7 @@ public class RiverMonitorDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(RiverMonitorDbContext).Assembly);
         
         modelBuilder.Entity<SystemSetting>().HasData(
-            new SystemSetting { Key = "Endpoint:MoaApi", Value = "https://data.moa.gov.tw" }
+            new SystemSetting { Id = 3, Key = "Endpoint:MoaApi", Value = "https://data.moa.gov.tw" }
         );
     }
 

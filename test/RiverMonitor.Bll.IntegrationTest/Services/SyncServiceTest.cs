@@ -34,4 +34,12 @@ public class SyncServiceTest
         
         Assert.True(true);
     }
+
+    [Fact]
+    public async Task SyncGroundwaterSiteAsync()
+    {
+        await _syncService.SyncGroundwaterSiteAsync();
+        
+        Assert.True(true);
+    }
 }
