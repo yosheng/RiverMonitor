@@ -25,6 +25,9 @@
       <Compile Update="Services\SyncService.Groundwater.cs">
         <DependentUpon>SyncService.cs</DependentUpon>
       </Compile>
+      <Compile Update="Services\SyncService.IrrigationAgency.cs">
+        <DependentUpon>SyncService.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

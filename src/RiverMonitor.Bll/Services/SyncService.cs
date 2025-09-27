@@ -22,6 +22,10 @@ public interface ISyncService
     Task SyncMonitoringSiteAsync();
     
     Task SyncGroundwaterSiteAsync();
+    
+    Task SyncIrrigationAgencyAsync();
+    
+    Task SyncIrrigationAgencyStationAsync();
 }
 
 public partial class SyncService : ISyncService
@@ -30,6 +34,7 @@ public partial class SyncService : ISyncService
     private readonly RiverMonitorDbContext _dbContext;
     private readonly ILogger<SyncService> _logger;
     private readonly IValidationService _validationService;
+    private readonly IMoaApiService _moaApiService;
     private readonly IServiceProvider _serviceProvider;
 
     public SyncService(
@@ -37,13 +42,14 @@ public partial class SyncService : ISyncService
         RiverMonitorDbContext dbContext,
         ILogger<SyncService> logger, 
         IValidationService validationService,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider, IMoaApiService moaApiService)
     {
         _moenvApiService = moenvApiService;
         _dbContext = dbContext;
         _logger = logger;
         _validationService = validationService;
         _serviceProvider = serviceProvider;
+        _moaApiService = moaApiService;
     }
 
     public async Task SyncWastewaterEmissionAsync()
