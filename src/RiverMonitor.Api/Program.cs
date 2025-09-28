@@ -1,10 +1,14 @@
 using System.Text.Json;
 using FluentValidation;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Refit;
 using RiverMonitor.Api;
+using RiverMonitor.Api.Filters;
 using RiverMonitor.Api.Middleware;
+using RiverMonitor.Api.Services;
 using RiverMonitor.Bll;
 using RiverMonitor.Bll.ApiServices;
 using RiverMonitor.Bll.Services;
@@ -35,6 +39,20 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContext<RiverMonitorDbContext>(options =>
     options.UseSqlServer(builder.Configuration["ConnectionString"])
 );
+
+// 配置 Hangfire
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseMemoryStorage()
+);
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = Environment.ProcessorCount;
+    options.Queues = new[] { "default", "sync" };
+});
 
 builder.Services.AddServices();
 builder.Services.AddTransient(sp => new ApiKeyHandler(builder.Configuration["Endpoint:MoenvApiKey"]!));
@@ -98,6 +116,21 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// 配置 Hangfire Dashboard 與密碼認證
+var hangfireUsername = builder.Configuration["Hangfire:Username"] ?? "admin";
+var hangfirePassword = builder.Configuration["Hangfire:Password"] ?? "admin123";
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthorizationFilter(hangfireUsername, hangfirePassword) },
+    DashboardTitle = "RiverMonitor Background Jobs",
+    StatsPollingInterval = 2000,
+    DisplayStorageConnectionString = false
+});
+
 app.MapControllers();
+
+// 配置定時任務
+BackgroundJobService.ConfigureRecurringJobs();
 
 app.Run();

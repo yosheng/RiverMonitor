@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RiverMonitor.Dal;
 
@@ -11,9 +12,11 @@ using RiverMonitor.Dal;
 namespace RiverMonitor.Dal.Migrations
 {
     [DbContext(typeof(RiverMonitorDbContext))]
-    partial class RiverMonitorDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250928111923_AddHangfireDashboardSetting")]
+    partial class AddHangfireDashboardSetting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -29,7 +29,9 @@ public class RiverMonitorDbContext : DbContext
 
         modelBuilder.Entity<SystemSetting>().HasData(
             new SystemSetting { Id = 3, Key = "Endpoint:MoaApi", Value = "https://data.moa.gov.tw" },
-            new SystemSetting { Id = 4, Key = "Endpoint:IaApi", Value = "https://www.ia.gov.tw" }
+            new SystemSetting { Id = 4, Key = "Endpoint:IaApi", Value = "https://www.ia.gov.tw" },
+            new SystemSetting { Id = 5, Key = "Hangfire:Username", Value = "admin" },
+            new SystemSetting { Id = 6, Key = "Hangfire:Password", Value = "admin" }
         );
     }
 
