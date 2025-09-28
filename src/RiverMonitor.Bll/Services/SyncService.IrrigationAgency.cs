@@ -8,6 +8,27 @@ namespace RiverMonitor.Bll.Services;
 
 public partial class SyncService
 {
+    private readonly Dictionary<string, string> _irrigationAgencyWorkStationUrlDict = new()
+    {
+        { "雲林管理處", "https://www.iayli.nat.gov.tw/about/WorkStationPage?a=10411" },
+        { "彰化管理處", "https://www.iachu.nat.gov.tw/about/WorkStationPage?a=10461" },
+        { "臺中管理處", "https://www.iatch.nat.gov.tw/about/WorkStationPage?a=10361" },
+        { "石門管理處", "https://www.iasme.nat.gov.tw/about/WorkStationPage?a=10211" },
+        { "嘉南管理處", "https://www.iacna.nat.gov.tw/about/WorkStationPage?a=10561" },
+        { "桃園管理處", "https://www.iatyu.nat.gov.tw/about/WorkStationPage?a=10161" },
+        { "瑠公管理處", "https://www.ialgo.nat.gov.tw/about/WorkStationPage?a=10017" },
+        { "高雄管理處", "https://www.iakhs.nat.gov.tw/about/WorkStationPage?a=10611" },
+        { "新竹管理處", "https://www.iahch.nat.gov.tw/about/WorkStationPage?a=10261" },
+        { "花蓮管理處", "https://www.iahli.nat.gov.tw/about/WorkStationPage?a=10761" },
+        { "北基管理處", "https://www.iapke.nat.gov.tw/about/WorkStationPage?a=10061" },
+        { "南投管理處", "https://www.ianto.nat.gov.tw/about/WorkStationPage?a=10511" },
+        { "七星管理處", "" },
+        { "宜蘭管理處", "https://www.iaila.nat.gov.tw/about/WorkStationPage?a=10711" },
+        { "臺東管理處", "https://www.iattu.nat.gov.tw/about/WorkStationPage?a=10811" },
+        { "屏東管理處", "https://www.iaptu.nat.gov.tw/about/WorkStationPage?a=10661" },
+        { "苗栗管理處", "https://www.iamli.nat.gov.tw/about/WorkStationPage?a=10311" }
+    };
+    
     public async Task SyncIrrigationAgencyAsync()
     {
         if (_dbContext.IrrigationAgencies.Any())
@@ -99,6 +120,13 @@ public partial class SyncService
             {
                 irrigationAgency.OpenUnitId = dataItem.ID;
             }
+        }
+        
+        foreach (var keyValuePair in _irrigationAgencyWorkStationUrlDict)
+        {
+            var irrigationAgency = addEntities.FirstOrDefault(x => x.Name == keyValuePair.Key);
+            if (irrigationAgency != null)
+                irrigationAgency.WorkStationUrl = keyValuePair.Value;
         }
 
         _dbContext.IrrigationAgencies.AddRange(addEntities);
