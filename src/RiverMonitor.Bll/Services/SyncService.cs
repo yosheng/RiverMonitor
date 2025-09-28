@@ -26,6 +26,7 @@ public interface ISyncService
     Task SyncIrrigationAgencyAsync();
     
     Task SyncIrrigationAgencyStationAsync();
+    Task SyncIrrigationAgencyStationMonitoringDataAsync();
 }
 
 public partial class SyncService : ISyncService

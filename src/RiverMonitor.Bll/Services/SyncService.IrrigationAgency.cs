@@ -57,8 +57,9 @@ public partial class SyncService
             }
 
             // 選取包含地址和電話的 div，並處理其內部文字
-            var contentNode = officeNode.SelectSingleNode(".//div[contains(@class, 'card-content')]/div[contains(., '地址')]");
-            
+            var contentNode =
+                officeNode.SelectSingleNode(".//div[contains(@class, 'card-content')]/div[contains(., '地址')]");
+
             // 使用 InnerHtml 並以 <br> 分割，可以準確地得到每一行
             var lines = contentNode.InnerHtml.Split(new[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -112,6 +113,7 @@ public partial class SyncService
             {
                 irrigationAgency = addEntities.FirstOrDefault(x => x.Name == "臺東管理處");
             }
+
             if (title == "台中管理處")
             {
                 irrigationAgency = addEntities.FirstOrDefault(x => x.Name == "臺中管理處");
@@ -122,7 +124,7 @@ public partial class SyncService
                 irrigationAgency.OpenUnitId = dataItem.ID;
             }
         }
-        
+
         foreach (var keyValuePair in _irrigationAgencyWorkStationUrlDict)
         {
             var irrigationAgency = addEntities.FirstOrDefault(x => x.Name == keyValuePair.Key);
@@ -155,28 +157,35 @@ public partial class SyncService
                 await _dbContext.SaveChangesAsync();
                 continue;
             }
-            
+
             var workStationHttpContent = await irrigationAgency.WorkStationUrl.GetStringAsync();
-            
+
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(workStationHttpContent);
 
             var siteMenu = htmlDoc.GetElementbyId("siteMenu");
-            
+
             var stations = new List<IrrigationAgencyStation>();
 
             // 取得所有工作站資料
             foreach (var stationNode in siteMenu.SelectNodes(".//li[contains(@class, 'siteMenu-item')]"))
             {
                 var name = stationNode.SelectSingleNode(".//div[contains(@class, 'h4')]")?.InnerText?.Trim();
-        
+
                 // 如果找不到名稱，就跳過這筆資料
                 if (string.IsNullOrEmpty(name))
                 {
                     continue;
                 }
-                var address = stationNode.SelectSingleNode(".//div[contains(@class, 'siteMenu-info') and .//i[contains(@class, 'icon-location')]]")?.InnerText?.Trim();
-                var phone = stationNode.SelectSingleNode(".//div[contains(@class, 'siteMenu-info') and .//i[contains(@class, 'icon-phone')]]")?.InnerText?.Trim();
+
+                var address = stationNode
+                    .SelectSingleNode(
+                        ".//div[contains(@class, 'siteMenu-info') and .//i[contains(@class, 'icon-location')]]")
+                    ?.InnerText?.Trim();
+                var phone = stationNode
+                    .SelectSingleNode(
+                        ".//div[contains(@class, 'siteMenu-info') and .//i[contains(@class, 'icon-phone')]]")?.InnerText
+                    ?.Trim();
 
                 stations.Add(new IrrigationAgencyStation()
                 {
@@ -187,8 +196,34 @@ public partial class SyncService
                 });
                 _dbContext.IrrigationAgencyStations.AddRange(stations);
             }
+
             await _dbContext.SaveChangesAsync();
         }
+    }
+
+    public async Task SyncIrrigationAgencyStationMonitoringDataAsync()
+    {
+        var irrigationAgencyStations = await _dbContext.IrrigationAgencyStations
+            .Select(station => new
+            {
+                AgencyName = station.Agency.Name,
+                OpenUnitId = station.Agency.OpenUnitId,
+                Name = station.Name,
+                Id = station.Id
+            })
+            .ToListAsync();
         
+        var irrigationAgencyDict = irrigationAgencyStations
+            .GroupBy(x => new
+            {
+                x.AgencyName,
+                x.OpenUnitId
+            })
+            .ToDictionary(x => x.Key, x => x.ToList());
+        
+        foreach (var irrigationAgency in irrigationAgencyDict)
+        { 
+            
+        }
     }
 }

@@ -67,4 +67,12 @@ public class SyncServiceTest
         
         Assert.True(true);
     }
+
+    [Fact]
+    public async Task SyncIrrigationAgencyStationMonitoringDataAsync()
+    {
+        await _syncService.SyncIrrigationAgencyStationMonitoringDataAsync();
+        
+        Assert.True(true);
+    }
 }
