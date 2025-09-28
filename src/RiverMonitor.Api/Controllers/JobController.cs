@@ -1,6 +1,5 @@
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
-using RiverMonitor.Api.Services;
 using RiverMonitor.Bll.Services;
 
 namespace RiverMonitor.Api.Controllers;
@@ -17,16 +16,6 @@ public class JobController : ControllerBase
     public JobController(ISyncService syncService)
     {
         _syncService = syncService;
-    }
-
-    /// <summary>
-    /// 觸發所有同步任務
-    /// </summary>
-    [HttpPost("trigger-all")]
-    public IActionResult TriggerAllJobs()
-    {
-        BackgroundJobService.TriggerImmediateJobs();
-        return Ok(new { message = "所有同步任務已加入佇列" });
     }
 
     /// <summary>

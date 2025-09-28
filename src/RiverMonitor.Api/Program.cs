@@ -2,13 +2,13 @@ using System.Text.Json;
 using FluentValidation;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Hangfire.RecurringJobAdmin;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Refit;
 using RiverMonitor.Api;
 using RiverMonitor.Api.Filters;
 using RiverMonitor.Api.Middleware;
-using RiverMonitor.Api.Services;
 using RiverMonitor.Bll;
 using RiverMonitor.Bll.ApiServices;
 using RiverMonitor.Bll.Services;
@@ -46,6 +46,7 @@ builder.Services.AddHangfire(configuration => configuration
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
     .UseMemoryStorage()
+    .UseRecurringJobAdmin(typeof(ServiceCollectionExtension).Assembly)
 );
 
 builder.Services.AddHangfireServer(options =>
@@ -129,8 +130,5 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 
 app.MapControllers();
-
-// 配置定時任務
-BackgroundJobService.ConfigureRecurringJobs();
 
 app.Run();

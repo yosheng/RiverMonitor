@@ -2,30 +2,38 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
+using Hangfire.RecurringJobAdmin;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RiverMonitor.Bll.ApiServices;
 using RiverMonitor.Bll.Helpers;
 using RiverMonitor.Dal;
-using RiverMonitor.Model.ApiModels;
 using RiverMonitor.Model.Entities;
 
 namespace RiverMonitor.Bll.Services;
 
 public interface ISyncService
 {
+    [RecurringJob("0 2 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-wastewater-emission")]
     Task SyncWastewaterEmissionAsync();
     
+    [RecurringJob("0 3 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-pollution-site-announcement")]
     Task SyncPollutionSiteAndAnnouncementAsync();
 
+    [RecurringJob("0 4 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-monitoring-site")]
     Task SyncMonitoringSiteAsync();
     
+    [RecurringJob("0 5 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-groundwater-site")]
     Task SyncGroundwaterSiteAsync();
     
+    [RecurringJob("0 1 * * SUN", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-irrigation-agency")]
     Task SyncIrrigationAgencyAsync();
     
+    [RecurringJob("30 1 * * SUN", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-irrigation-agency-station")]
     Task SyncIrrigationAgencyStationAsync();
+    
+    [RecurringJob("0 6 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-irrigation-agency-station-monitoring-data")]
     Task SyncIrrigationAgencyStationMonitoringDataAsync();
 }
 
