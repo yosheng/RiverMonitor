@@ -10,7 +10,7 @@ public class IrrigationAgencyStationEntityTypeConfiguration : IEntityTypeConfigu
     {
         builder.HasKey(s => s.Id);
         
-        builder.HasIndex(s => s.Name)
+        builder.HasIndex(s => new { s.Name, s.IrrigationAgencyId })
             .IsUnique();
         
         builder.Property(s => s.Name)
@@ -30,6 +30,6 @@ public class IrrigationAgencyStationEntityTypeConfiguration : IEntityTypeConfigu
         builder.HasOne(station => station.Agency)
             .WithMany(agency => agency.Stations)
             .HasForeignKey(station => station.IrrigationAgencyId)
-            .OnDelete(DeleteBehavior.Cascade); // 當測站被刪除時，其下的樣本數據也一併刪除
+            .OnDelete(DeleteBehavior.Cascade); 
     }
 }
