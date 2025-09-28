@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
+using Flurl.Http;
 using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RiverMonitor.Model.ApiModels;
 using RiverMonitor.Model.Entities;
@@ -132,8 +134,61 @@ public partial class SyncService
         await _dbContext.SaveChangesAsync();
     }
 
-    public Task SyncIrrigationAgencyStationAsync()
+    public async Task SyncIrrigationAgencyStationAsync()
     {
-        throw new NotImplementedException();
+        var irrigationAgencies = await _dbContext.IrrigationAgencies.Select(x => new
+        {
+            x.Id,
+            x.WorkStationUrl
+        }).ToListAsync();
+
+        foreach (var irrigationAgency in irrigationAgencies)
+        {
+            if (string.IsNullOrWhiteSpace(irrigationAgency.WorkStationUrl))
+            {
+                var irrigationAgencyStation = new IrrigationAgencyStation()
+                {
+                    IrrigationAgencyId = irrigationAgency.Id,
+                    Name = "本處"
+                };
+                _dbContext.IrrigationAgencyStations.Add(irrigationAgencyStation);
+                await _dbContext.SaveChangesAsync();
+                continue;
+            }
+            
+            var workStationHttpContent = await irrigationAgency.WorkStationUrl.GetStringAsync();
+            
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(workStationHttpContent);
+
+            var siteMenu = htmlDoc.GetElementbyId("siteMenu");
+            
+            var stations = new List<IrrigationAgencyStation>();
+
+            // 取得所有工作站資料
+            foreach (var stationNode in siteMenu.SelectNodes(".//li[contains(@class, 'siteMenu-item')]"))
+            {
+                var name = stationNode.SelectSingleNode(".//div[contains(@class, 'h4')]")?.InnerText?.Trim();
+        
+                // 如果找不到名稱，就跳過這筆資料
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+                var address = stationNode.SelectSingleNode(".//div[contains(@class, 'siteMenu-info') and .//i[contains(@class, 'icon-location')]]")?.InnerText?.Trim();
+                var phone = stationNode.SelectSingleNode(".//div[contains(@class, 'siteMenu-info') and .//i[contains(@class, 'icon-phone')]]")?.InnerText?.Trim();
+
+                stations.Add(new IrrigationAgencyStation()
+                {
+                    IrrigationAgencyId = irrigationAgency.Id,
+                    Name = name,
+                    Address = address,
+                    Phone = phone
+                });
+                _dbContext.IrrigationAgencyStations.AddRange(stations);
+            }
+            await _dbContext.SaveChangesAsync();
+        }
+        
     }
 }
