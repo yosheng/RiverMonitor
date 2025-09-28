@@ -1,6 +1,8 @@
 using System.Text.Json;
 using FluentValidation;
 using Hangfire;
+using Hangfire.Console;
+using Hangfire.Console.Extensions;
 using Hangfire.MemoryStorage;
 using Hangfire.RecurringJobAdmin;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +49,8 @@ builder.Services.AddHangfire(configuration => configuration
     .UseRecommendedSerializerSettings()
     .UseMemoryStorage()
     .UseRecurringJobAdmin(typeof(ServiceCollectionExtension).Assembly)
-);
+    .UseConsole()
+).AddHangfireConsoleExtensions();
 
 builder.Services.AddHangfireServer(options =>
 {

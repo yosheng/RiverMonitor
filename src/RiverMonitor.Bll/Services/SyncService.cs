@@ -17,23 +17,26 @@ public interface ISyncService
 {
     [RecurringJob("0 2 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-wastewater-emission")]
     Task SyncWastewaterEmissionAsync();
-    
-    [RecurringJob("0 3 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-pollution-site-announcement")]
+
+    [RecurringJob("0 3 * * *", ApplicationConstant.TimeZone, "default",
+        RecurringJobId = "sync-pollution-site-announcement")]
     Task SyncPollutionSiteAndAnnouncementAsync();
 
     [RecurringJob("0 4 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-monitoring-site")]
     Task SyncMonitoringSiteAsync();
-    
+
     [RecurringJob("0 5 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-groundwater-site")]
     Task SyncGroundwaterSiteAsync();
-    
+
     [RecurringJob("0 1 * * SUN", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-irrigation-agency")]
     Task SyncIrrigationAgencyAsync();
-    
-    [RecurringJob("30 1 * * SUN", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-irrigation-agency-station")]
+
+    [RecurringJob("30 1 * * SUN", ApplicationConstant.TimeZone, "default",
+        RecurringJobId = "sync-irrigation-agency-station")]
     Task SyncIrrigationAgencyStationAsync();
-    
-    [RecurringJob("0 6 * * *", ApplicationConstant.TimeZone, "default", RecurringJobId = "sync-irrigation-agency-station-monitoring-data")]
+
+    [RecurringJob("0 6 * * *", ApplicationConstant.TimeZone, "default",
+        RecurringJobId = "sync-irrigation-agency-station-monitoring-data")]
     Task SyncIrrigationAgencyStationMonitoringDataAsync();
 }
 
@@ -50,7 +53,7 @@ public partial class SyncService : ISyncService
     public SyncService(
         IMoenvApiService moenvApiService,
         RiverMonitorDbContext dbContext,
-        ILogger<SyncService> logger, 
+        ILogger<SyncService> logger,
         IValidationService validationService,
         IServiceProvider serviceProvider, IMoaApiService moaApiService, IIaApiService iaApiService)
     {
@@ -106,21 +109,21 @@ public partial class SyncService : ISyncService
             foreach (var record in records)
             {
                 if (string.IsNullOrEmpty(record.EmsNo)) continue;
-                
+
                 var result = ValidateHelper.ParseAndCorrectCoordinate(record.LetNorth, record.LetEast);
 
                 if (!result.IsValid)
                 {
-                    _logger.LogWarning("{EmsNo} -> 經緯度不合法或無法解析: Lat='{LatStr}', Lon='{LonStr}'", 
+                    _logger.LogWarning("{EmsNo} -> 經緯度不合法或無法解析: Lat='{LatStr}', Lon='{LonStr}'",
                         record.EmsNo, record.LetNorth, record.LetEast);
                     continue;
                 }
-                
+
                 record.LetNorth = result.Latitude.ToString();
                 record.LetEast = result.Longitude.ToString();
 
                 // 處理統一編號不合法
-                if (!string.IsNullOrEmpty(record.Unino) && 
+                if (!string.IsNullOrEmpty(record.Unino) &&
                     !Regex.IsMatch(record.Unino, @"^\d{8}$"))
                 {
                     _logger.LogWarning("{RecordEmsNo} -> {RecordUnino} 統一編號不合法", record.EmsNo, record.Unino);
@@ -221,12 +224,12 @@ public partial class SyncService : ISyncService
 
         // 1. 同步污染場址
         var siteCount = await SyncPollutionSitesConcurrentlyAsync();
-        
+
         _logger.LogInformation("污染場址同步完成，共處理 {Count} 條記錄", siteCount);
 
         // 2. 同步公告（避免N+1查詢）
         var announcementCount = await SyncAnnouncementsAsync();
-        
+
         _logger.LogInformation("公告同步完成，共處理 {Count} 條記錄", announcementCount);
         _logger.LogInformation("污染場址及公告數據同步完成");
     }
@@ -266,16 +269,16 @@ public partial class SyncService : ISyncService
         for (int offset = 0; offset < totalRecords; offset += batchSize)
         {
             var currentOffset = offset;
-            
+
             await semaphore.WaitAsync();
-            
+
             var task = Task.Run(async () =>
             {
                 try
                 {
                     await ProcessPollutionSiteBatchAsync(currentOffset, batchSize);
                     Interlocked.Add(ref processedCount, batchSize);
-                    _logger.LogInformation("已處理 {Processed}/{Total} 條污染場址記錄", 
+                    _logger.LogInformation("已處理 {Processed}/{Total} 條污染場址記錄",
                         Math.Min(processedCount, totalRecords), totalRecords);
                 }
                 finally
@@ -283,7 +286,7 @@ public partial class SyncService : ISyncService
                     semaphore.Release();
                 }
             });
-            
+
             tasks.Add(task);
         }
 
@@ -297,16 +300,16 @@ public partial class SyncService : ISyncService
     private async Task<int> SyncPollutionSitesInBatchesAsync(int totalRecords, int batchSize)
     {
         var processedCount = 0;
-        
+
         for (int offset = 0; offset < totalRecords; offset += batchSize)
         {
-            _logger.LogInformation("正在處理第 {Offset} 到 {End} 條污染場址記錄", 
+            _logger.LogInformation("正在處理第 {Offset} 到 {End} 條污染場址記錄",
                 offset, Math.Min(offset + batchSize, totalRecords));
-            
+
             await ProcessPollutionSiteBatchAsync(offset, batchSize);
             processedCount += batchSize;
         }
-        
+
         return processedCount;
     }
 
@@ -319,13 +322,13 @@ public partial class SyncService : ISyncService
         var dbContext = scope.ServiceProvider.GetRequiredService<RiverMonitorDbContext>();
         var apiService = scope.ServiceProvider.GetRequiredService<IMoenvApiService>();
         var validationService = scope.ServiceProvider.GetRequiredService<IValidationService>();
-        
+
         var response = await apiService.GetEmsS07DataAsync(offset, limit);
         if (response?.Records == null || !response.Records.Any()) return;
 
         var records = response.Records.ToList();
         var siteIds = records.Select(r => r.SiteId).Where(id => !string.IsNullOrEmpty(id)).Distinct().ToList();
-        
+
         // 批量查詢已存在的場址
         var existingSites = await dbContext.PollutionSites
             .Where(s => siteIds.Contains(s.SiteId))
@@ -345,20 +348,21 @@ public partial class SyncService : ISyncService
                 var result = ValidateHelper.ParseAndCorrectCoordinate(record.Wgs84Lat, record.Wgs84Lng);
                 if (!result.IsValid)
                 {
-                    _logger.LogWarning("{SiteId} -> 經緯度不合法或無法解析: Lat='{LatStr}', Lon='{LonStr}'", 
+                    _logger.LogWarning("{SiteId} -> 經緯度不合法或無法解析: Lat='{LatStr}', Lon='{LonStr}'",
                         record.SiteId, record.Wgs84Lat, record.Wgs84Lng);
                     continue;
                 }
+
                 record.Wgs84Lat = result.Latitude.ToString();
                 record.Wgs84Lng = result.Longitude.ToString();
             }
-            
+
             // 數據驗證
             var validationResult = await validationService.ValidateAsync(record);
             if (!validationResult.IsValid)
             {
                 PrintErrorRecord(record);
-                _logger.LogWarning("污染場址數據驗證失敗 - SiteId: {SiteId}, 錯誤: {Errors}", 
+                _logger.LogWarning("污染場址數據驗證失敗 - SiteId: {SiteId}, 錯誤: {Errors}",
                     record.SiteId, string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 invalidRecords++;
                 continue;
@@ -410,7 +414,7 @@ public partial class SyncService : ISyncService
             }
         }
 
-        _logger.LogInformation("批次處理完成 - 有效記錄: {ValidRecords}, 無效記錄: {InvalidRecords}", 
+        _logger.LogInformation("批次處理完成 - 有效記錄: {ValidRecords}, 無效記錄: {InvalidRecords}",
             validRecords, invalidRecords);
 
         if (newSites.Any())
@@ -451,15 +455,16 @@ public partial class SyncService : ISyncService
 
         for (int offset = 0; offset < totalRecords; offset += batchSize)
         {
-            _logger.LogInformation("正在處理第 {Offset} 到 {End} 條公告記錄", 
+            _logger.LogInformation("正在處理第 {Offset} 到 {End} 條公告記錄",
                 offset, Math.Min(offset + batchSize, totalRecords));
 
             var response = await _moenvApiService.GetEmsS08DataAsync(offset, batchSize);
             if (response?.Records == null || !response.Records.Any()) continue;
 
             var records = response.Records.ToList();
-            var announcementNos = records.Select(r => r.Annono).Where(n => !string.IsNullOrEmpty(n)).Distinct().ToList();
-            
+            var announcementNos =
+                records.Select(r => r.Annono).Where(n => !string.IsNullOrEmpty(n)).Distinct().ToList();
+
             // 批量查詢已存在的公告
             var existingAnnouncements = await _dbContext.SiteAnnouncements
                 .Where(a => announcementNos.Contains(a.AnnouncementNo))
@@ -475,7 +480,7 @@ public partial class SyncService : ISyncService
                 // 檢查對應的場址是否存在
                 if (!siteIdMap.TryGetValue(record.Siteid, out var pollutionSiteId))
                 {
-                    _logger.LogWarning("找不到對應的場址 {SiteId}，跳過公告 {AnnouncementNo}", 
+                    _logger.LogWarning("找不到對應的場址 {SiteId}，跳過公告 {AnnouncementNo}",
                         record.Siteid, record.Annono);
                     continue;
                 }
@@ -499,7 +504,9 @@ public partial class SyncService : ISyncService
                 else
                 {
                     // 更新現有公告信息
-                    announcement.AnnouncementDate = DateTime.TryParse(record.Annodate, out var date) ? date : announcement.AnnouncementDate;
+                    announcement.AnnouncementDate = DateTime.TryParse(record.Annodate, out var date)
+                        ? date
+                        : announcement.AnnouncementDate;
                     announcement.Title = record.Annotitle ?? announcement.Title;
                     announcement.Content = record.Annocontent ?? announcement.Content;
                     announcement.IsSoilPollutionZone = record.Issoil == "1";
@@ -524,7 +531,7 @@ public partial class SyncService : ISyncService
     {
         _logger.LogWarning("數據: {Serialize}", JsonSerializer.Serialize(record, new JsonSerializerOptions()
         {
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
         }));
     }
 }
