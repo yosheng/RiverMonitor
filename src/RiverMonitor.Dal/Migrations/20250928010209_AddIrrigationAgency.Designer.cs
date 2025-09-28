@@ -12,7 +12,7 @@ using RiverMonitor.Dal;
 namespace RiverMonitor.Dal.Migrations
 {
     [DbContext(typeof(RiverMonitorDbContext))]
-    [Migration("20250927162023_AddIrrigationAgency")]
+    [Migration("20250928010209_AddIrrigationAgency")]
     partial class AddIrrigationAgency
     {
         /// <inheritdoc />
@@ -131,6 +131,10 @@ namespace RiverMonitor.Dal.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -140,6 +144,10 @@ namespace RiverMonitor.Dal.Migrations
                         .IsRequired()
                         .HasMaxLength(8)
                         .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("WorkStationUrl")
                         .HasColumnType("nvarchar(max)");
@@ -479,6 +487,12 @@ namespace RiverMonitor.Dal.Migrations
                             Id = 3,
                             Key = "Endpoint:MoaApi",
                             Value = "https://data.moa.gov.tw"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Key = "Endpoint:IaApi",
+                            Value = "https://www.ia.gov.tw"
                         });
                 });
 

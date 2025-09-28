@@ -18,5 +18,11 @@ public class IrrigationAgencyEntityTypeConfiguration : IEntityTypeConfiguration<
         
         builder.Property(s => s.Name)
             .HasMaxLength(50);
+        
+        builder.Property(s => s.Phone)
+            .HasMaxLength(20);
+        
+        builder.Property(s => s.Address)
+            .HasMaxLength(500);
     }
 }

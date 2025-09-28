@@ -30,6 +30,8 @@ namespace RiverMonitor.Dal.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     OpenUnitId = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     WorkStationUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -61,6 +63,11 @@ namespace RiverMonitor.Dal.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "SystemSetting",
+                columns: new[] { "Id", "Description", "Key", "Value" },
+                values: new object[] { 4, null, "Endpoint:IaApi", "https://www.ia.gov.tw" });
+
             migrationBuilder.CreateIndex(
                 name: "IX_IrrigationAgencies_OpenUnitId",
                 table: "IrrigationAgencies",
@@ -91,6 +98,11 @@ namespace RiverMonitor.Dal.Migrations
             migrationBuilder.DropPrimaryKey(
                 name: "PK_SystemSetting",
                 table: "SystemSetting");
+
+            migrationBuilder.DeleteData(
+                table: "SystemSetting",
+                keyColumn: "Id",
+                keyValue: 4);
 
             migrationBuilder.RenameTable(
                 name: "SystemSetting",

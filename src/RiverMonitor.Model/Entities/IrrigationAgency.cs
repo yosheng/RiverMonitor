@@ -14,6 +14,16 @@ public class IrrigationAgency
     /// 名稱
     /// </summary>
     public required string Name { get; set; }
+    
+    /// <summary>
+    /// 電話
+    /// </summary>
+    public string? Phone { get; set; }
+
+    /// <summary>
+    /// 地址
+    /// </summary>
+    public string? Address { get; set; }
 
     /// <summary>
     /// 開放資料集的單位代碼
