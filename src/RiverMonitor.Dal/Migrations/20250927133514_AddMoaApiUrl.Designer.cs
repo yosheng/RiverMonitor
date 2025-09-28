@@ -406,7 +406,7 @@ namespace RiverMonitor.Dal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SystemSettings");
+                    b.ToTable("SystemSetting");
 
                     b.HasData(
                         new
