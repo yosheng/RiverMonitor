@@ -20,6 +20,7 @@ public class RiverMonitorDbContext : DbContext
     public DbSet<GroundwaterSiteSample> GroundwaterSiteSamples { get; set; }
     public DbSet<IrrigationAgency> IrrigationAgencies { get; set; }
     public DbSet<IrrigationAgencyStation> IrrigationAgencyStations { get; set; }
+    public DbSet<IrrigationAgencyStationMonitoringData> IrrigationAgencyStationMonitoringData { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

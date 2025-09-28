@@ -44,4 +44,7 @@ public class IrrigationAgencyStation
     /// 導覽屬性：關聯的農田水利署
     /// </summary>
     public IrrigationAgency Agency { get; set; } = null!;
+    
+    public ICollection<IrrigationAgencyStationMonitoringData> MonitoringData { get; set; } = new List<IrrigationAgencyStationMonitoringData>();
+
 }
