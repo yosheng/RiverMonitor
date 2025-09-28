@@ -11,7 +11,7 @@ namespace RiverMonitor.Dal.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.InsertData(
-                table: "SystemSettings",
+                table: "SystemSetting",
                 columns: new[] { "Id", "Description", "Key", "Value" },
                 values: new object[] { 3, null, "Endpoint:MoaApi", "https://data.moa.gov.tw" });
         }
@@ -20,7 +20,7 @@ namespace RiverMonitor.Dal.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DeleteData(
-                table: "SystemSettings",
+                table: "SystemSetting",
                 keyColumn: "Id",
                 keyValue: 3);
         }

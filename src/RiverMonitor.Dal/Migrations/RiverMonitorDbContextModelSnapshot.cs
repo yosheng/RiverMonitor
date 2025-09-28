@@ -124,9 +124,11 @@ namespace RiverMonitor.Dal.Migrations
 
             modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgency", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
@@ -159,16 +161,18 @@ namespace RiverMonitor.Dal.Migrations
 
             modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgencyStation", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<Guid>("IrrigationAgencyId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("IrrigationAgencyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()

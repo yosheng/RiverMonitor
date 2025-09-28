@@ -79,7 +79,6 @@ public partial class SyncService
 
             addEntities.Add(new IrrigationAgency()
             {
-                Id = Guid.NewGuid(),
                 Name = name,
                 Phone = phone,
                 Address = address,

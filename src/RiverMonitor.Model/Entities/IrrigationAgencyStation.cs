@@ -8,7 +8,7 @@ public class IrrigationAgencyStation
     /// <summary>
     /// 主鍵
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// 名稱
@@ -38,7 +38,7 @@ public class IrrigationAgencyStation
     /// <summary>
     /// 外鍵：關聯的農田水利署 ID
     /// </summary>
-    public Guid IrrigationAgencyId { get; set; }
+    public int IrrigationAgencyId { get; set; }
 
     /// <summary>
     /// 導覽屬性：關聯的農田水利署

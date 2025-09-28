@@ -8,7 +8,7 @@ public class IrrigationAgency
     /// <summary>
     /// 主鍵
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// 名稱
