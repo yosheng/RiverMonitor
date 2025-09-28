@@ -15,13 +15,22 @@ public class SyncController : ControllerBase
     }
 
     /// <summary>
-    /// 同步河流监测数据
+    /// 同步水質排放資料
     /// </summary>
-    /// <returns>同步结果</returns>
-    [HttpPost("data")]
-    public async Task<string> SyncDataAsync()
+    [HttpPost("wastewater-emission")]
+    public async Task<string> SyncWastewaterEmissionAsync()
     {
         await _syncService.SyncWastewaterEmissionAsync();
+        return "数据同步成功";
+    }
+    
+    /// <summary>
+    /// 同步水質站点及公告資料
+    /// </summary>
+    [HttpPost("pollution-site-and-announcement")]
+    public async Task<string> SyncPollutionSiteAndAnnouncementAsync()
+    {
+        await _syncService.SyncPollutionSiteAndAnnouncementAsync();
         return "数据同步成功";
     }
 }

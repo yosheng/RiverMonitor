@@ -11,7 +11,7 @@ public sealed class SystemSettingConfigurationContext : DbContext
         _connectionString = connectionString;
     }
 
-    public DbSet<Model.Entities.SystemSetting> SystemSettings => Set<Model.Entities.SystemSetting>();
+    public DbSet<Model.Entities.SystemSetting> SystemSetting => Set<Model.Entities.SystemSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

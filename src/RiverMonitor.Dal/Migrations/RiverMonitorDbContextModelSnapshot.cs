@@ -22,6 +22,328 @@ namespace RiverMonitor.Dal.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("RiverMonitor.Model.Entities.GroundwaterSite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("County")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SiteEngName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SiteId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SiteName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Statusofuse")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Township")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("Twd97Lat")
+                        .HasColumnType("decimal(12, 8)");
+
+                    b.Property<decimal?>("Twd97Lon")
+                        .HasColumnType("decimal(12, 8)");
+
+                    b.Property<decimal?>("Twd97Tm2X")
+                        .HasColumnType("decimal(12, 4)");
+
+                    b.Property<decimal?>("Twd97Tm2Y")
+                        .HasColumnType("decimal(12, 4)");
+
+                    b.Property<string>("UgwDistrictName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SiteId")
+                        .IsUnique();
+
+                    b.ToTable("GroundwaterSites");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.GroundwaterSiteSample", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GroundwaterSiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ItemEngAbbreviation")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ItemEngName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ItemName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ItemUnit")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("ItemValue")
+                        .HasColumnType("decimal(18, 5)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SampleDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroundwaterSiteId");
+
+                    b.HasIndex("ItemName");
+
+                    b.HasIndex("SampleDate");
+
+                    b.ToTable("GroundwaterSiteSamples");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgency", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("OpenUnitId")
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("WorkStationUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OpenUnitId")
+                        .IsUnique()
+                        .HasFilter("[OpenUnitId] IS NOT NULL");
+
+                    b.ToTable("IrrigationAgencies");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgencyStation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("IrrigationAgencyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal?>("Twd97Lat")
+                        .HasColumnType("decimal(12, 8)");
+
+                    b.Property<decimal?>("Twd97Lon")
+                        .HasColumnType("decimal(12, 8)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IrrigationAgencyId");
+
+                    b.HasIndex("Name", "IrrigationAgencyId")
+                        .IsUnique();
+
+                    b.ToTable("IrrigationAgencyStations");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgencyStationMonitoringData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("ElectricalConductivity")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("IrrigationAgencyStationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("PhValue")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<DateTime>("SampleDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SiteName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Version")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal?>("WaterTemperatureC")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IrrigationAgencyStationId", "SampleDate");
+
+                    b.ToTable("IrrigationAgencyStationMonitoringData");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.MonitoringSite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Basin")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("County")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("River")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SiteEngName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SiteId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SiteName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Statusofuse")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Township")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("Twd97Lat")
+                        .HasColumnType("decimal(12, 8)");
+
+                    b.Property<decimal?>("Twd97Lon")
+                        .HasColumnType("decimal(12, 8)");
+
+                    b.Property<decimal?>("Twd97Tm2X")
+                        .HasColumnType("decimal(12, 4)");
+
+                    b.Property<decimal?>("Twd97Tm2Y")
+                        .HasColumnType("decimal(12, 4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SiteId")
+                        .IsUnique();
+
+                    b.ToTable("MonitoringSites");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.MonitoringSiteSample", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ItemEngAbbreviation")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ItemEngName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ItemName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ItemUnit")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("ItemValue")
+                        .HasColumnType("decimal(18, 5)");
+
+                    b.Property<Guid>("MonitoringSiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SampleDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemName");
+
+                    b.HasIndex("MonitoringSiteId");
+
+                    b.HasIndex("SampleDate");
+
+                    b.ToTable("MonitoringSiteSamples");
+                });
+
             modelBuilder.Entity("RiverMonitor.Model.Entities.PollutantEmission", b =>
                 {
                     b.Property<Guid>("Id")
@@ -178,6 +500,56 @@ namespace RiverMonitor.Dal.Migrations
                     b.ToTable("SiteAnnouncements");
                 });
 
+            modelBuilder.Entity("RiverMonitor.Model.Entities.SystemSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemSetting");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 3,
+                            Key = "Endpoint:MoaApi",
+                            Value = "https://data.moa.gov.tw"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Key = "Endpoint:IaApi",
+                            Value = "https://www.ia.gov.tw"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Key = "Hangfire:Username",
+                            Value = "admin"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Key = "Hangfire:Password",
+                            Value = "admin"
+                        });
+                });
+
             modelBuilder.Entity("RiverMonitor.Model.Entities.WastewaterPermit", b =>
                 {
                     b.Property<Guid>("Id")
@@ -245,6 +617,50 @@ namespace RiverMonitor.Dal.Migrations
                     b.ToTable("WastewaterPermits");
                 });
 
+            modelBuilder.Entity("RiverMonitor.Model.Entities.GroundwaterSiteSample", b =>
+                {
+                    b.HasOne("RiverMonitor.Model.Entities.GroundwaterSite", "Site")
+                        .WithMany("Samples")
+                        .HasForeignKey("GroundwaterSiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgencyStation", b =>
+                {
+                    b.HasOne("RiverMonitor.Model.Entities.IrrigationAgency", "Agency")
+                        .WithMany("Stations")
+                        .HasForeignKey("IrrigationAgencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Agency");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgencyStationMonitoringData", b =>
+                {
+                    b.HasOne("RiverMonitor.Model.Entities.IrrigationAgencyStation", "Station")
+                        .WithMany("MonitoringData")
+                        .HasForeignKey("IrrigationAgencyStationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Station");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.MonitoringSiteSample", b =>
+                {
+                    b.HasOne("RiverMonitor.Model.Entities.MonitoringSite", "Site")
+                        .WithMany("Samples")
+                        .HasForeignKey("MonitoringSiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Site");
+                });
+
             modelBuilder.Entity("RiverMonitor.Model.Entities.PollutantEmission", b =>
                 {
                     b.HasOne("RiverMonitor.Model.Entities.WastewaterPermit", "Permit")
@@ -265,6 +681,26 @@ namespace RiverMonitor.Dal.Migrations
                         .IsRequired();
 
                     b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.GroundwaterSite", b =>
+                {
+                    b.Navigation("Samples");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgency", b =>
+                {
+                    b.Navigation("Stations");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.IrrigationAgencyStation", b =>
+                {
+                    b.Navigation("MonitoringData");
+                });
+
+            modelBuilder.Entity("RiverMonitor.Model.Entities.MonitoringSite", b =>
+                {
+                    b.Navigation("Samples");
                 });
 
             modelBuilder.Entity("RiverMonitor.Model.Entities.PollutionSite", b =>
