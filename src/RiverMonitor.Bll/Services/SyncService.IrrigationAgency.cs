@@ -2,9 +2,13 @@
 using Flurl.Http;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RiverMonitor.Bll.ApiServices;
+using RiverMonitor.Dal;
 using RiverMonitor.Model.ApiModels;
 using RiverMonitor.Model.Entities;
+using RiverMonitor.Model.Models;
 
 namespace RiverMonitor.Bll.Services;
 
@@ -138,6 +142,11 @@ public partial class SyncService
 
     public async Task SyncIrrigationAgencyStationAsync()
     {
+        if (_dbContext.IrrigationAgencyStations.Any())
+        {
+            return;
+        }
+        
         var irrigationAgencies = await _dbContext.IrrigationAgencies.Select(x => new
         {
             x.Id,
@@ -187,6 +196,12 @@ public partial class SyncService
                         ".//div[contains(@class, 'siteMenu-info') and .//i[contains(@class, 'icon-phone')]]")?.InnerText
                     ?.Trim();
 
+                // 避免同步數據錯誤做的補丁
+                if (name.Contains("金山工作站"))
+                {
+                    name = "金山工作站";
+                }
+
                 stations.Add(new IrrigationAgencyStation()
                 {
                     IrrigationAgencyId = irrigationAgency.Id,
@@ -203,27 +218,204 @@ public partial class SyncService
 
     public async Task SyncIrrigationAgencyStationMonitoringDataAsync()
     {
+        _logger.LogInformation("開始同步農田水利署水質監測數據");
+
+        await _dbContext.IrrigationAgencyStationMonitoringData.ExecuteDeleteAsync();
+
         var irrigationAgencyStations = await _dbContext.IrrigationAgencyStations
-            .Select(station => new
+            .Select(station => new SingleAgencyStationDto
             {
                 AgencyName = station.Agency.Name,
                 OpenUnitId = station.Agency.OpenUnitId,
-                Name = station.Name,
+                Name = station.Name,             
                 Id = station.Id
             })
             .ToListAsync();
         
         var irrigationAgencyDict = irrigationAgencyStations
-            .GroupBy(x => new
+            .GroupBy(x => new SingleAgencyDto
             {
-                x.AgencyName,
-                x.OpenUnitId
+                AgencyName = x.AgencyName,
+                OpenUnitId = x.OpenUnitId
             })
             .ToDictionary(x => x.Key, x => x.ToList());
+
+        // 過濾出有 OpenUnitId 的農田水利署
+        var validAgencies = irrigationAgencyDict.Where(x => !string.IsNullOrEmpty(x.Key.OpenUnitId)).ToList();
         
-        foreach (var irrigationAgency in irrigationAgencyDict)
-        { 
+        if (!validAgencies.Any())
+        {
+            _logger.LogWarning("沒有找到任何有OpenUnitId的農田水利署");
+            return;
+        }
+
+        _logger.LogInformation("找到 {Count} 個農田水利署需要同步數據", validAgencies.Count);
+
+        // 併發處理，每次最多10個
+        const int maxConcurrency = 10;
+        var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+        var tasks = new List<Task>();
+        var processedCount = 0;
+
+        foreach (var irrigationAgency in validAgencies)
+        {
+            await semaphore.WaitAsync();
+
+            var task = Task.Run(async () =>
+            {
+                try
+                {
+                    await ProcessSingleAgencyMonitoringDataAsync(irrigationAgency.Key, irrigationAgency.Value);
+                    Interlocked.Increment(ref processedCount);
+                    _logger.LogInformation("已處理 {Processed}/{Total} 個農田水利署的監測數據", 
+                        processedCount, validAgencies.Count);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "處理農田水利署 {AgencyName} 的監測數據時發生錯誤", irrigationAgency.Key.AgencyName);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            tasks.Add(task);
+        }
+
+        await Task.WhenAll(tasks);
+        _logger.LogInformation("農田水利署水質監測數據同步完成，共處理 {Count} 個農田水利署", processedCount);
+    }
+
+    /// <summary>
+    /// 處理單個農田水利署的監測數據（使用獨立的 scope）
+    /// </summary>
+    private async Task ProcessSingleAgencyMonitoringDataAsync(
+        SingleAgencyDto agencyKey, 
+        List<SingleAgencyStationDto> stations)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<RiverMonitorDbContext>();
+        var moaApiService = scope.ServiceProvider.GetRequiredService<IMoaApiService>();
+        var validationService = scope.ServiceProvider.GetRequiredService<IValidationService>();
+
+        var agencyName = agencyKey.AgencyName;
+        var openUnitId = agencyKey.OpenUnitId;
+
+        _logger.LogInformation("開始處理農田水利署 {AgencyName} 的監測數據", agencyName);
+
+        try
+        {
+            // 1. 建立工作站名稱到ID的映射（避免N+1查詢）
+            var stationMappings = stations.Where(x => x.Name.Contains("站"))
+                .ToDictionary(x =>
+                {
+                    if (x.Name.Length > 3 )
+                    {
+                        x.Name = x.Name.Length > 3
+                            ? x.Name.Substring(0, x.Name.Length - 3)
+                            : x.Name;
+                    }
+                    return x.Name.Contains("站") ? x.Name : $"{x.Name}站";
+                }, x => x.Id);
+
+            // 針對本處單獨處理
+            if (stations.Count == 1 && stations[0].Name == "本處")
+            {
+                // 原始政府資料有空格!
+                stationMappings = new Dictionary<string, int>() {
+                    { "本處 ", stations[0].Id }
+                };
+            }
             
+            // 2. 調用API獲取水質監測數據
+            var waterQualityData = await moaApiService.GetWaterQualityOpenDataAsync(openUnitId);
+            if (!waterQualityData.Any())
+            {
+                _logger.LogWarning("農田水利署 {AgencyName} 沒有獲取到任何水質監測數據", agencyName);
+                return;
+            }
+
+            // 3. 過濾並匹配數據
+            var validMonitoringData = new List<IrrigationAgencyStationMonitoringData>();
+            var matchedCount = 0;
+            var unmatchedCount = 0;
+
+            foreach (var data in waterQualityData)
+            {
+                // 根據 ManagementOfficeName 和 Workstation 匹配工作站
+                if (string.IsNullOrEmpty(data.ManagementOfficeName) || 
+                    string.IsNullOrEmpty(data.Workstation) ||
+                    string.IsNullOrEmpty(data.SiteName) ||
+                    string.IsNullOrEmpty(data.SampleDate))
+                {
+                    continue;
+                }
+
+                // 匹配管理處名稱
+                if (!data.ManagementOfficeName.Equals(agencyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // 匹配工作站
+                if (!stationMappings.TryGetValue(data.Workstation, out var stationId))
+                {
+                    unmatchedCount++;
+                    _logger.LogDebug("找不到匹配的工作站：{Workstation}，農田水利署：{AgencyName}", 
+                        data.Workstation, agencyName);
+                    continue;
+                }
+
+                // 解析採樣日期
+                if (!DateTime.TryParse(data.SampleDate, out var sampleDate))
+                {
+                    _logger.LogWarning("無法解析採樣日期：{SampleDate}", data.SampleDate);
+                    continue;
+                }
+
+                // 數據驗證
+                var validationResult = await validationService.ValidateAsync(data);
+                if (!validationResult.IsValid)
+                {
+                    PrintErrorRecord(data);
+                    _logger.LogWarning("水質監測數據驗證失敗：{Errors}", 
+                        string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                    continue;
+                }
+
+                // 創建監測數據實體
+                var monitoringData = new IrrigationAgencyStationMonitoringData
+                {
+                    Id = Guid.NewGuid(),
+                    SiteName = data.SiteName,
+                    SampleDate = sampleDate,
+                    WaterTemperatureC = decimal.TryParse(data.WaterTemperatureC, out var temp) ? temp : null,
+                    PhValue = decimal.TryParse(data.PhValue, out var ph) ? ph : null,
+                    ElectricalConductivity = decimal.TryParse(data.ElectricalConductivity, out var ec) ? ec : null,
+                    Note = data.Note,
+                    Version = data.Version,
+                    IrrigationAgencyStationId = stationId
+                };
+
+                validMonitoringData.Add(monitoringData);
+                matchedCount++;
+            }
+
+            // 4. 批量保存數據
+            if (validMonitoringData.Any())
+            {
+                dbContext.IrrigationAgencyStationMonitoringData.AddRange(validMonitoringData);
+                await dbContext.SaveChangesAsync();
+            }
+
+            _logger.LogInformation("農田水利署 {AgencyName} 處理完成：匹配 {MatchedCount} 條，未匹配 {UnmatchedCount} 條，保存 {SavedCount} 條", 
+                agencyName, matchedCount, unmatchedCount, validMonitoringData.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "處理農田水利署 {AgencyName} 的數據時發生錯誤", agencyName);
+            throw;
         }
     }
 }

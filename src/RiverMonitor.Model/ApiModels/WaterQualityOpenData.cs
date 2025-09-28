@@ -16,13 +16,13 @@ public class WaterQualityOpenData
     [JsonPropertyName("採樣日期")]
     public string? SampleDate { get; set; }
 
-    [JsonPropertyName("水溫_C")]
+    [JsonPropertyName("水溫°C")]
     public string? WaterTemperatureC { get; set; }
 
     [JsonPropertyName("pH值")]
     public string? PhValue { get; set; }
 
-    [JsonPropertyName("EC_μS_cm_")]
+    [JsonPropertyName("EC(μS/cm)")]
     public string? ElectricalConductivity { get; set; } // EC (Electrical Conductivity)
 
     [JsonPropertyName("備註")]
