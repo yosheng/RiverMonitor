@@ -5,5 +5,5 @@ namespace RiverMonitor.Bll.ApiServices;
 public interface IIaApiService
 {
     [Get("/zh-TW/about/officeList")]
-    Task<string> GetOfficeListPageAsync([Query("a")] int agencyId = 93);
+    Task<string> GetOfficeListPageAsync([AliasAs("a")] int agencyId = 93);
 }

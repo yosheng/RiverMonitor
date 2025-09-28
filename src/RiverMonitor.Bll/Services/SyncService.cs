@@ -35,6 +35,7 @@ public partial class SyncService : ISyncService
     private readonly ILogger<SyncService> _logger;
     private readonly IValidationService _validationService;
     private readonly IMoaApiService _moaApiService;
+    private readonly IIaApiService _iaApiService;
     private readonly IServiceProvider _serviceProvider;
 
     public SyncService(
@@ -42,7 +43,7 @@ public partial class SyncService : ISyncService
         RiverMonitorDbContext dbContext,
         ILogger<SyncService> logger, 
         IValidationService validationService,
-        IServiceProvider serviceProvider, IMoaApiService moaApiService)
+        IServiceProvider serviceProvider, IMoaApiService moaApiService, IIaApiService iaApiService)
     {
         _moenvApiService = moenvApiService;
         _dbContext = dbContext;
@@ -50,6 +51,7 @@ public partial class SyncService : ISyncService
         _validationService = validationService;
         _serviceProvider = serviceProvider;
         _moaApiService = moaApiService;
+        _iaApiService = iaApiService;
     }
 
     public async Task SyncWastewaterEmissionAsync()

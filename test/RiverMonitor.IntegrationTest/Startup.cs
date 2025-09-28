@@ -82,7 +82,9 @@ public class Startup
                 services.AddRefitClient<IMoaApiService>()
                     .ConfigureHttpClient(c => c.BaseAddress = new Uri(context.Configuration["Endpoint:MoaApi"]!));
 
-
+                services.AddRefitClient<IIaApiService>()
+                    .ConfigureHttpClient(c => c.BaseAddress = new Uri(context.Configuration["Endpoint:IaApi"]!));
+                
                 services.AddAutoMapper(cfg => { });
 
                 // 自動掃描整個專案，找到所有繼承自 AbstractValidator 的類別並註冊到 DI 容器

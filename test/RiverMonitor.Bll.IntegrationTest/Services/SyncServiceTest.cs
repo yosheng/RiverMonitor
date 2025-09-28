@@ -42,4 +42,12 @@ public class SyncServiceTest
         
         Assert.True(true);
     }
+    
+    [Fact]
+    public async Task SyncIrrigationAgencyAsync()
+    {
+        await _syncService.SyncIrrigationAgencyAsync();
+        
+        Assert.True(true);
+    }
 }

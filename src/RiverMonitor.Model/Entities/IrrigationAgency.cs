@@ -28,7 +28,7 @@ public class IrrigationAgency
     /// <summary>
     /// 開放資料集的單位代碼
     /// </summary>
-    public required string OpenUnitId { get; set; }
+    public string? OpenUnitId { get; set; }
 
     /// <summary>
     /// 工作站網址

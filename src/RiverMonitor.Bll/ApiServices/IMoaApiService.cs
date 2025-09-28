@@ -15,6 +15,12 @@ public interface IMoaApiService
         [Body(BodySerializationMethod.UrlEncoded)]
         ThematicRequestForm form
     );
+    
+    [Post("/api/open_list.ashx")]
+    Task<OpenThematic.RootObject> GetOpenDataAsync(
+        [Body(BodySerializationMethod.UrlEncoded)]
+        ThematicRequestForm form
+    );
 
     /// <summary>
     /// 從主題式開放資料中取得水質資料。
